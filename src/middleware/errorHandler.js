@@ -1,5 +1,3 @@
-// const { logEvents } = require('./logEvents')
-
 import { logEvents } from './logEvents.js'
 
 const errorHandler = (error, req, res, next) => {
@@ -8,4 +6,3 @@ const errorHandler = (error, req, res, next) => {
 }
 
 export default errorHandler
-// module.exports = errorHandler

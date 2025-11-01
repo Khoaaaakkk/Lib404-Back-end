@@ -1,9 +1,3 @@
-// const { logEvents } = require('../src/middleware/logEvents')
-// const User = require('../src/model/users.model')
-
-// const jwt = require('jsonwebtoken')
-// require('dotenv').config()
-
 import { logEvents } from '../middleware/logEvents.js'
 import User from '../model/users.model.js'
 
@@ -40,5 +34,3 @@ const handleRefreshToken = async (req, res) => {
 }
 
 export default { handleRefreshToken }
-
-// module.exports = { handleRefreshToken }

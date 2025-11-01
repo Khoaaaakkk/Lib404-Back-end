@@ -1,28 +1,27 @@
-// const User = require('../model/users.model')
-
-// const { logEvents } = require('../middleware/logEvents')
-
 import User from '../model/users.model.js'
 import { logEvents } from '../middleware/logEvents.js'
 
-const getAllUsers = async (req, res) => {
-  const users = await User.find({})
+export const getAllUsers = async (req, res) => {
+  // find the user info exclude hashedPassword
+  const users = await User.find({}).select('-hashedPassword')
 
   res.json(users)
 
   logEvents(`return user List`)
 }
 
-const createNewUser = async (req, res) => {
-  const user = await User.create(req.body)
+// this does not get call most of the time
+export const createNewUser = async (req, res) => {
+  // find the user info exclude hashedPassword
+  const user = await User.create(req.body).select('-hashedPassword')
 
   res.status(200).json(user)
 
-  logEvents(`New user created: id: ${user.id}, username: ${user.username}`)
+  logEvents(`New user created: _id: ${user._id}, username: ${user.username}`)
 }
 
-const updateUser = async (req, res) => {
-  const user = await User.findOne({ _id: `${req.body.id}` })
+export const updateUser = async (req, res) => {
+  const user = await User.findOne({ username: `${req.body.username}` })
 
   await user.updateOne({
     username: `${req.body.username ? req.body.username : user.username}`,
@@ -30,39 +29,37 @@ const updateUser = async (req, res) => {
   })
 
   // wait for user to updated then respond
-  const updatedUser = await User.findOne({ _id: `${req.body.id}` })
+  const updatedUser = await User.findOne({
+    username: `${req.body.username}`
+  }).select('-hashedPassword')
   res.json(updatedUser)
 
   logEvents(`User with id ${req.body.id} has been updated`)
 }
 
-const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
+  // find and delete user
   const user = await User.deleteOne({ username: `${req.body.username}` })
+
+  // check if user deletion failed or not
   if (!user.deletedCount) {
     logEvents(`User ${req.body.username} does not exist`)
-    res.status(404).json({ message: 'User not found' })
-    return
+    return res.status(404).json({ message: 'User not found' })
   }
-  const users = await User.find({})
-
-  res.json({ message: `User with id ${req.body.username} has been deleted` })
 
   logEvents(`User with id ${req.body.username} has been deleted`)
+  return res.json({
+    message: `User with id ${req.body.username} has been deleted`
+  })
 }
-const getUser = async (req, res) => {
-  const user = await User.findOne({ _id: `${req.params.id}` })
+
+export const getUser = async (req, res) => {
+  // find the user info exclude hashedPassword
+  const user = await User.findOne({
+    username: `${req.params.username}`
+  }).select('-hashedPassword')
 
   res.json(user)
 
-  logEvents(`return user with id: ${req.params.id}`)
+  logEvents(`return user with username: ${req.params.username}`)
 }
-
-export default { getAllUsers, createNewUser, deleteUser, getUser, updateUser }
-
-// module.exports = {
-//   getAllUsers,
-//   createNewUser,
-//   deleteUser,
-//   getUser,
-//   updateUser
-// }

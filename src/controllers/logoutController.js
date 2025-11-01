@@ -1,6 +1,3 @@
-// const { logEvents } = require('../middleware/logEvents')
-// const User = require('../model/users.model')
-
 import User from '../model/users.model.js'
 import { logEvents } from '../middleware/logEvents.js'
 
@@ -31,4 +28,3 @@ const handleLogout = async (req, res) => {
   res.sendStatus(204)
 }
 export default { handleLogout }
-// module.exports = { handleLogout }
