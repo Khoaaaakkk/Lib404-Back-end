@@ -42,4 +42,4 @@ const TableSchema = mongoose.Schema(
     
 );
 
-module.exports = mongoose.model('Table', TableSchema);
+export default mongoose.model('Table', TableSchema);

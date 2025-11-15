@@ -1,3 +1,4 @@
+const e = require('express');
 const mongoose = require('mongoose');
 
 const LockerSchema = mongoose.Schema(
@@ -17,4 +18,4 @@ const LockerSchema = mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model('Locker', LockerSchema);
+export default mongoose.model('Locker', LockerSchema);

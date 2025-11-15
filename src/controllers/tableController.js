@@ -23,16 +23,16 @@ const createNewTable = async (req, res) => {
 
     res.status(200).json(table);
 
-    logEvents(`New table created: id: ${table.id}, tableID: ${table.tableID}`);
+    logEvents(`New table created: tableID: ${table.tableID}`);
 }
 
 // Update an existing table
 const updateTable = async (req, res) => {
-    const table = await Table.findOne({ _id: req.body.id });
+    const table = await Table.findOne({ tableID: req.body.tableID });
 
     if(!table) {
         res.status(404).json({ message: 'Table not found' });
-        logEvents(`Table with id ${req.body.id} not found for update`);
+        logEvents(`Table with tableID ${req.body.tableID} not found for update`);
         return;
     }
     // Update the table fields
@@ -44,9 +44,50 @@ const updateTable = async (req, res) => {
         date: req.body.date ? req.body.date : table.date
     });
     // Fetch the updated table
-    const updatedTable = await Table.findOne({ _id: req.body.id });
+    const updatedTable = await Table.findOne({ tableID: req.body.tableID });
     res.json(updatedTable);
-    logEvents(`Table with id ${req.body.id} has been updated`);
+    logEvents(`Table with tableID ${req.body.tableID} has been updated`);
 }
 
 
+//Update table availability status
+const updateTableAvailability = async (req, res) => {
+    const {id} = req.params;
+    const { availability, date } = req.body;
+
+    const table = await Table.findOneAndUpdate({ tableID: id }, { availability, date }, { new: true });
+
+if (!table) {
+    logEvents(`Table with tableID ${id} not found for availability update`);
+    return res.status(404).json({ message: 'Table not found' });
+}
+
+    res.json(table);
+    logEvents(`Table with tableID ${id} availability updated to ${availability} on date ${date}`);
+}
+
+// Delete a table
+const deleteTable = async (req, res) => {
+    const {id} = req.params;
+    const deleted = await Table.deleteOne({ tableID: id });
+
+    if (!deleted.deletedCount) {
+        logEvents(`Table with tableID ${id} does not exist`);
+        res.status(404).json({ message: 'Table not found' });
+        return;
+    }
+
+    res.json({ message: `Table with tableID ${id} has been deleted` });
+
+    logEvents(`Table with tableID ${id} has been deleted`);
+}
+
+// Get table controller exports
+export default { 
+    getAllTables,   
+    createNewTable,
+    deleteTable,
+    getTableByRoomID,
+    updateTable,
+    updateTableAvailability
+}
