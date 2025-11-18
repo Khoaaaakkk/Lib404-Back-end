@@ -3,20 +3,14 @@ import express from 'express';
 
 const router = express.Router();
 
-// Get all lockers
-router.get('/', lockerController.getAllLockers);    
+// api/lockers/
+router
+    .route('/')
+    .get(lockerController.getAllLockers)
+    .post(lockerController.createNewLocker)
+    .put(lockerController.updateLocker)
+    .delete(lockerController.deleteLocker);
 
-// Get locker by lockerID
-router.get('/:lockerID', lockerController.getLockerByID);
-
-// Create new locker
-router.post('/', lockerController.createNewLocker);
-
-// Update locker
-router.put('/', lockerController.updateLocker);
-
-// Delete locker
-router.delete('/', lockerController.deleteLocker);
+router.route('/:id').get(lockerController.getLockerByID);
 
 export default router;
-    

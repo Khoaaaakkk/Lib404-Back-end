@@ -10,7 +10,7 @@ const TableSchema = mongoose.Schema(
         },
 
         Type: {
-            type: String,
+            type: 'single'| 'group',
             enum: ['single', 'group'],
             required: true, 
         },

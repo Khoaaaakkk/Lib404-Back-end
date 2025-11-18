@@ -3,22 +3,14 @@ import express from "express";
 
 const router = express.Router();
 
-//Get all tables
-router.get("/", tableController.getAllTables);
+// api/tables/
+router
+    .route("/")
+    .get(tableController.getAllTables)
+    .post(tableController.createNewTable)
+    .put(tableController.updateTable)
+    .delete(tableController.deleteTable);
 
-//Get table by roomID
-router.get("/room/:roomID", tableController.getTableByRoomID);
-
-//Create new table
-router.post("/", tableController.createNewTable);
-
-//Update table
-router.put("/:id", tableController.updateTable);
-
-//Update table availability
-router.patch("/availability/:id", tableController.updateTableAvailability);
-
-//Delete table
-router.delete("/:id", tableController.deleteTable);
+router.route("/:id").get(tableController.getTableByID);
 
 export default router;

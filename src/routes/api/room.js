@@ -3,20 +3,15 @@ import express from "express";
 
 const router = express.Router();
 
-//Get all rooms
-router.get("/", roomController.getAllRooms);    
+// api/rooms/
+router
+    .route("/")
+    .get(roomController.getAllRooms)
+    .post(roomController.createNewRoom)
+    .put(roomController.updateRoom)
+    .delete(roomController.deleteRoom);
 
-//Get room by roomID
-router.get("/:roomID", roomController.getRoomByID);
-
-//Create new room
-router.post("/", roomController.createNewRoom);
-
-//Update room
-router.put("/", roomController.updateRoom);
-
-//Delete room
-router.delete("/", roomController.deleteRoom);
+router.route("/:roomID").get(roomController.getRoomByID);
 
 export default router;
     

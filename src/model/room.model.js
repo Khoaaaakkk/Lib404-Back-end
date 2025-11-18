@@ -10,7 +10,7 @@ const RoomSchema = mongoose.Schema(
         },
 
         type: {
-            type: String,
+            type: 'silent' | 'standard',
             enum: ['silent', 'standard'],
             required: true
         },
