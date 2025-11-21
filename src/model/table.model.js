@@ -33,12 +33,7 @@ const TableSchema = mongoose.Schema(
 
     },
 
-    {
-     timestamps: {
-        createdAt: 'Order_at',
-        updatedAt: 'Modified_at'
-     }
-    }
+    {timestamps: true}
     
 );
 
