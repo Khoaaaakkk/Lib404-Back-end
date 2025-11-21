@@ -11,6 +11,7 @@ const corsOptions = {
       logEvents('Not allowed by CORS', 'reqLog.txt')
     }
   },
+  credentials: true,
   optionsSuccessStatus: 200
 }
 

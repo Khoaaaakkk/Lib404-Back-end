@@ -14,13 +14,22 @@ const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
 export const SignUp = async (req, res) => {
   try {
     // deconstruct request
-    const { username, password, email, firstName, lastName } = req.body
+    const { username, password, email } = req.body
+    console.log(username, password, email)
 
     // handle missing value on registration
-    if (!username || !password || !email || !firstName || !lastName) {
+    if (!username || !password) {
       return res
         .status(400)
         .json({ message: 'Username and password are required' })
+    }
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' })
+    }
+    if (password.length < 8) {
+      return res
+        .status(400)
+        .json({ message: 'Password must be at least 8 characters long' })
     }
 
     // check for duplicate usernames in the db
@@ -38,8 +47,8 @@ export const SignUp = async (req, res) => {
     const newUser = await User.create({
       username: username,
       hashedPassword: hashedPassword,
-      email: email,
-      displayName: `${firstName} ${lastName}`
+      email: email
+      // displayName: `${firstName} ${lastName}`
     })
 
     // successfully create new user
