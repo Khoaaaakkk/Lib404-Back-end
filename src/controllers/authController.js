@@ -40,6 +40,13 @@ export const SignUp = async (req, res) => {
       return res.status(409).json({ message: 'Username already exists' })
     }
 
+    const duplicateEmail = await User.findOne({ email: email })
+
+    if (duplicateEmail) {
+      logEvents('Failed to register user, email already exists: ' + email)
+
+      return res.status(410).json({ message: 'Email already exists' })
+    }
     // encrypt the password
     const hashedPassword = await bcrypt.hash(password, 10)
 
