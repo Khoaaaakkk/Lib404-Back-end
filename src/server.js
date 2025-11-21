@@ -25,16 +25,12 @@ app.use(express.json())
 app.use(cookieParser())
 
 import auth from './routes/auth.js'
-import register from './routes/signup.js'
 import api from './routes/api.js'
 import refresh from './routes/refresh.js'
-import logout from './routes/logout.js'
 
 // Routers
-app.use('/register', register)
 app.use('/auth', auth)
 app.use('/refresh', refresh)
-app.use('/logout', logout)
 
 // JWT verification middleware
 // app.use(verifyJWT)

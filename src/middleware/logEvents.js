@@ -1,10 +1,3 @@
-// const { format } = require('date-fns')
-
-// const fs = require('fs')
-// const fsPromises = require('fs').promises
-// const path = require('path')
-// const { error } = require('console')
-
 import { format } from 'date-fns'
 
 import fs from 'fs'
@@ -14,7 +7,7 @@ import { error } from 'console'
 
 const __dirname = import.meta.dirname
 
-const logEvents = async (message, fileName = 'eventLog.txt') => {
+export const logEvents = async (message, fileName = 'eventLog.txt') => {
   const dateTime = `[${format(new Date(), 'dd/MM/yyyy-HH:mm:ss')}]`
   const logItem = `${dateTime}: ${message}\n`
   // console.log(logItem);
@@ -35,10 +28,7 @@ const logEvents = async (message, fileName = 'eventLog.txt') => {
   }
 }
 
-const logger = (req, res, next) => {
+export const logger = (req, res, next) => {
   logEvents(`${req.method}\t ${req.headers.origin}\t${req.url}`, 'reqLog.txt')
   next()
 }
-
-export { logEvents, logger }
-// module.exports = { logEvents, logger }

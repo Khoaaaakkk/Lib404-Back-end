@@ -9,7 +9,7 @@ const UserSchema = mongoose.Schema(
       trim: true,
       lowercase: true
     },
-    password: {
+    hashedPassword: {
       type: String,
       required: true
     },
@@ -20,12 +20,23 @@ const UserSchema = mongoose.Schema(
       trim: true,
       lowercase: true
     },
-    refreshToken: String // Store refresh token with user
+    displayName: {
+      type: String,
+      require: true,
+      trim: true
+    },
+    avatarUrl: {
+      type: String // Link CDN for image
+    },
+    avatarId: {
+      type: String // Cloudinary public_id for delete image
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 )
 
 const User = mongoose.model('User', UserSchema)
 
 export default User
-// module.exports = User
