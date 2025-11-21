@@ -1,4 +1,4 @@
-import tableController from "../../controllers/tableController";
+import tableController from "../../controllers/tableController.js";
 import express from "express";
 
 const router = express.Router();
