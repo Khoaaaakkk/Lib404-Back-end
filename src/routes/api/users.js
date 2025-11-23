@@ -16,6 +16,6 @@ router
   .put(updateUser)
   .delete(deleteUser)
 
-router.route('/:id').get(getUser)
+router.route('/:username').get(getUser)
 
 export default router
