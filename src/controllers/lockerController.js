@@ -24,7 +24,7 @@ const createNewLocker = async (req, res) => {
 
 // Update an existing locker
 const updateLocker = async (req, res) => {
-    const locker = await Locker.findOneAndUpdate({ lockerID: req.body.lockerID });
+    const locker = await Locker.findOne({ lockerID: req.body.lockerID });
 
     if(!locker) {
         res.status(404).json({ message: 'Locker not found' });
