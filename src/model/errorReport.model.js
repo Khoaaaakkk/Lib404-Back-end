@@ -29,6 +29,9 @@ const ErrorReportSchema = mongoose.Schema(
         },
     },
         { timestamps: true }
-)
+);
+
+    console.log("ErrorReport schema loaded:", ErrorReportSchema.obj);
+
     const ErrorReport = mongoose.model('ErrorReport', ErrorReportSchema);
     export default ErrorReport;
