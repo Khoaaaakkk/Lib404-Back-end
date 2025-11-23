@@ -17,7 +17,7 @@ const getFeedbackByEmail = async (req, res) => {
 
 // Create new feedback
 const createNewFeedback = async (req, res) => {
-    let { rating } = req.body;
+    let rating = req.body.rating;
 
     if (rating < 0) rating = 1;
     if (rating > 5) rating = 5;
