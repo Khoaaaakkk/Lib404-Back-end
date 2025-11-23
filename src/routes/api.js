@@ -20,5 +20,5 @@ router.use('/auth', auth)
 router.use('/logout', logout)
 router.use('/refresh', refresh)
 router.use('/signup', signup)
-export default router
+export default router;
 // module.exports = router

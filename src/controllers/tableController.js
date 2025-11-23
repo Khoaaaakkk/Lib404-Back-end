@@ -38,7 +38,7 @@ const updateTable = async (req, res) => {
     // Update the table fields
     await table.updateOne({
         tableID: req.body.tableID ? req.body.tableID : table.tableID,
-        Type: req.body.Type ? req.body.Type : table.Type, 
+        type: req.body.type ? req.body.type : table.type, 
         roomID: req.body.roomID ? req.body.roomID : table.roomID,
         availability: req.body.availability !== undefined ? req.body.availability : table.availability,
         date: req.body.date ? req.body.date : table.date
