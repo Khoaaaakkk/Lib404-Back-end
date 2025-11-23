@@ -1,4 +1,4 @@
-import feedback from '../../controllers/feedback.js';
+import feedbackController from '../../controllers/feedbackController.js';
 import express from 'express';
 
 const router = express.Router()
@@ -6,9 +6,9 @@ const router = express.Router()
 // api/feedback/
 router
     .route('/') 
-    .get(feedback.getAllFeedback)
-    .post(feedback.createNewFeedback)
+    .get(feedbackController.getAllFeedback)
+    .post(feedbackController.createNewFeedback)
 
-router.route('/:email').get(feedback.getFeedbackByEmail);
+router.route('/:email').get(feedbackController.getFeedbackByEmail);
 
 export default router;

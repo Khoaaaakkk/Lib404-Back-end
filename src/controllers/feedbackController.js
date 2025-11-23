@@ -34,6 +34,6 @@ const createNewFeedback = async (req, res) => {
 
 export default{
     getAllFeedback,
-    getErrorReportByEmail,
-    createNewErrorReport,
+    getFeedbackByEmail,
+    createNewFeedback,
 }
