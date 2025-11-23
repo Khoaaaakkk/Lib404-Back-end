@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const LockerSchema = mongoose.Schema(
     {
         lockerID: {
-            type: String,
+            type: Number,
             required: true,
             unique: true,
             trim: true

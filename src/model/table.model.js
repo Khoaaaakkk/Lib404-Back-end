@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const TableSchema = mongoose.Schema(
     {
         tableID: {
-            type: String,
+            type: Number,
             required: true, 
             unique: true,
             trim: true
@@ -16,7 +16,7 @@ const TableSchema = mongoose.Schema(
         },
 
         roomID: {
-            type: String,
+            type: Number,
             required: true,
             ref: 'Room'
         },

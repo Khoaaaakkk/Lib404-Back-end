@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const RoomSchema = mongoose.Schema(
     {
         roomID: {
-            type: String,
+            type: Number,
             required: true,
             unique: true,
             trim: true
