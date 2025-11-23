@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const ErrorReportSchema = mongoose.Schema(
+const FeedbackSchema = mongoose.Schema(
     {
         username: {
             type: String,
@@ -31,7 +31,7 @@ const ErrorReportSchema = mongoose.Schema(
         { timestamps: true }
 );
 
-    console.log("ErrorReport schema loaded:", ErrorReportSchema.obj);
+    console.log("Feedback schema loaded:", FeedbackSchema.obj);
 
-    const ErrorReport = mongoose.model('ErrorReport', ErrorReportSchema);
-    export default ErrorReport;
+    const Feedback = mongoose.model('Feedback', FeedbackSchema);
+    export default Feedback;
