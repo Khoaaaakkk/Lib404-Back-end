@@ -1,4 +1,4 @@
-import Table from '../models/tableModel.js';
+import Table from '../model/table.model.js';
 import { logEvents } from '../middleware/logEvents.js';
 
 // Get all tables
@@ -10,11 +10,11 @@ const getAllTables = async (req, res) => {
     logEvents(`Returned table list`);
 }
 
-// Get a single table by roomID
-const getTableByRoomID = async (req, res) => {
-    const table = await Table.findOne({ roomID: req.params.roomID });
+// Get a single table by tableID
+const getTableByTableID = async (req, res) => {
+    const table = await Table.findOne({ tableID: req.params.tableID });
     res.json(table);
-    logEvents(`Returned table with roomID: ${req.params.roomID}`);
+    logEvents(`Returned table with tableID: ${req.params.tableID}`);
 }
 
 // Create a new table
@@ -87,7 +87,7 @@ export default {
     getAllTables,   
     createNewTable,
     deleteTable,
-    getTableByRoomID,
+    getTableByTableID,
     updateTable,
     updateTableAvailability
 }

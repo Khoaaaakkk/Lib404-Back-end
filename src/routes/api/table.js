@@ -11,6 +11,6 @@ router
     .put(tableController.updateTable)
     .delete(tableController.deleteTable);
 
-router.route("/:id").get(tableController.getTableByID);
+router.route("/:tableID").get(tableController.getTableByTableID);
 
 export default router;

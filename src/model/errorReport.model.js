@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { title } = require('process');
+import mongoose from 'mongoose';
 
 const ErrorReportSchema = mongoose.Schema(
     {
@@ -23,7 +22,7 @@ const ErrorReportSchema = mongoose.Schema(
         },
 
         status: {
-            type: 'pending' | 'in progress' | 'resolved',
+            type: String,
             enum: ['pending', 'in progress', 'resolved'],
             default: 'pending',
             required: true

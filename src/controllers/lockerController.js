@@ -1,4 +1,4 @@
-import Locker from '../models/Locker.js';
+import Locker from '../model/locker.model.js';
 import { logEvents } from '../middleware/logEvents.js';
 
 // Get all lockers
@@ -53,7 +53,7 @@ const deleteLocker = async (req,res) => {
     logEvents(`Locker with lockerID ${req.body.lockerID} has been deleted`);    
 }
 
-export {
+export default {
     getAllLockers,
     getLockerByID,
     createNewLocker,

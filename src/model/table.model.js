@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const TableSchema = mongoose.Schema(
     {
@@ -10,7 +10,7 @@ const TableSchema = mongoose.Schema(
         },
 
         Type: {
-            type: 'single'| 'group',
+            type: String,
             enum: ['single', 'group'],
             required: true, 
         },

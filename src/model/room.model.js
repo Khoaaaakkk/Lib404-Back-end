@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const RoomSchema = mongoose.Schema(
     {
@@ -10,7 +10,7 @@ const RoomSchema = mongoose.Schema(
         },
 
         type: {
-            type: 'silent' | 'standard',
+            type: String,
             enum: ['silent', 'standard'],
             required: true
         },

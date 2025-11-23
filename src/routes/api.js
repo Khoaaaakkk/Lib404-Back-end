@@ -4,10 +4,10 @@ import table from './api/table.js'
 import room from './api/room.js'
 import locker from './api/locker.js'
 import errorReport from './api/errorReport.js'
-import auth from './api/auth.js'
-import logout from './api/logout.js'
-import refresh from './api/refresh.js'
-import signup from './api/signup.js'
+import auth from './auth.js'
+import logout from './logout.js'
+import refresh from './refresh.js'
+import signup from './signup.js'
 
 const router = express.Router()
 

@@ -46,5 +46,6 @@ app.use(errorHandler)
 connectDB().then(() => {
   app.listen(PORT, () => {
     logEvents(`server start on: http://localhost:${PORT}`)
+    console.log(`Server running on port ${PORT}`)
   })
 })

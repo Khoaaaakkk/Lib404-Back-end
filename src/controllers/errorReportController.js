@@ -1,4 +1,4 @@
-import errorReport from '../models/errorReportModel.js';
+import errorReport from '../model/errorReport.model.js';
 import { logEvents } from '../middleware/logEvents.js';
 
 // Get all error reports
@@ -50,7 +50,7 @@ const deleteErrorReport = async (req, res) => {
     logEvents(`Deleted error report with ID: ${req.body.reportID}`);
 }
 
-export {
+export default{
     getAllErrorReports,
     getErrorReportByID,
     createNewErrorReport,
