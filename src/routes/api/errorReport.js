@@ -8,9 +8,7 @@ router
     .route('/') 
     .get(errorReportController.getAllErrorReports)
     .post(errorReportController.createNewErrorReport)
-    .put(errorReportController.updateErrorReport)
-    .delete(errorReportController.deleteErrorReport);
 
-router.route('/:id').get(errorReportController.getErrorReportByID);
+router.route('/:email').get(errorReportController.getErrorReportByEmail);
 
 export default router;
