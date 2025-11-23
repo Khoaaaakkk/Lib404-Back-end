@@ -33,5 +33,9 @@ const FeedbackSchema = mongoose.Schema(
 
     console.log("Feedback schema loaded:", FeedbackSchema.obj);
 
+    if (mongoose.models.Feedback) {
+  mongoose.deleteModel('Feedback');
+}
+
     const Feedback = mongoose.model('Feedback', FeedbackSchema);
     export default Feedback;

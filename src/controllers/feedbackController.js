@@ -1,4 +1,4 @@
-import feedback from '../model/feedback.js';
+import feedback from '../model/feedback.model.js';
 import { logEvents } from '../middleware/logEvents.js';
 
 // Get all feedback
