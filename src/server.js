@@ -29,8 +29,8 @@ import api from './routes/api.js'
 import refresh from './routes/refresh.js'
 
 // Routers
-app.use('/auth', auth)
-app.use('/refresh', refresh)
+app.use('/api/auth', auth)
+app.use('/api/refresh', refresh)
 
 // JWT verification middleware
 // app.use(verifyJWT)

@@ -103,7 +103,11 @@ export const signIn = async (req, res) => {
 
     // create accessToken with JWTs
     const accessToken = jwt.sign(
-      { userId: foundUser._id },
+      {
+        userId: foundUser._id,
+        username: foundUser.username,
+        email: foundUser.email
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: ACCESS_TOKEN_TTL }
     )
