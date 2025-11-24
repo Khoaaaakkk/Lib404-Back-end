@@ -1,28 +1,24 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
-const RoomSchema = mongoose.Schema(
-    {
-        roomID: {
-            type: Number,
-            required: true,
-            unique: true,
-            trim: true
-        },
+const RoomSchema = mongoose.Schema({
+  roomID: {
+    type: Number,
+    required: true,
+    unique: true,
+    trim: true
+  },
 
-        type: {
-            type: String,
-            enum: ['silent', 'standard'],
-            required: true
-        },
+  type: {
+    type: String,
+    enum: ['silent', 'standard'],
+    required: true
+  },
 
-        floorID: {
-            type: String,
-            ref: 'Floor',
-            required: true
-        },
+  floorID: {
+    type: String,
+    ref: 'Floor',
+    required: true
+  }
+})
 
-    }
-
-);
-
-export default mongoose.model('Room', RoomSchema);
+export default mongoose.model('Room', RoomSchema)

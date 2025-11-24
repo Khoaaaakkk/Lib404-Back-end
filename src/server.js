@@ -33,7 +33,7 @@ app.use('/api/auth', auth)
 app.use('/api/refresh', refresh)
 
 // JWT verification middleware
-// app.use(verifyJWT)
+// app.use(verifyJWT) // Comment this line out for testing porpuse only
 app.use('/api', api)
 // error handling
 app.use(errorHandler)
