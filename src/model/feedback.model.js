@@ -4,6 +4,7 @@ const FeedbackSchema = mongoose.Schema(
     {
         username: {
             type: String,
+            default: 'Anonymous',
             ref: 'User'
         },
 
