@@ -3,6 +3,8 @@ import { logEvents } from '../middleware/logEvents.js'
 
 export const connectDB = async () => {
   try {
+    console.log('Connecting to Database...')
+
     await mongoose.connect(process.env.DATABASE_URL)
     console.log('Connected to Database')
     logEvents(`Successfully connected to Database`)
