@@ -1,19 +1,21 @@
-// const userController = require('../../controllers/userController')
-// const express = require('express')
-
-import userController from '../../controllers/userController.js'
+import {
+  getAllUsers,
+  createNewUser,
+  deleteUser,
+  getUser,
+  updateUser
+} from '../../controllers/userController.js'
 import express from 'express'
 const router = express.Router()
 
 // api/users/
 router
   .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createNewUser)
-  .put(userController.updateUser)
-  .delete(userController.deleteUser)
+  .get(getAllUsers)
+  .post(createNewUser)
+  .put(updateUser)
+  .delete(deleteUser)
 
-router.route('/:id').get(userController.getUser)
+router.route('/:username').get(getUser)
 
 export default router
-// module.exports = router

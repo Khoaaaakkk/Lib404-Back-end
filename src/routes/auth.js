@@ -1,12 +1,12 @@
-// const authController = require('../../controllers/authController')
-// const express = require('express')
-
 import express from 'express'
-import authController from '../controllers/authController.js'
+import { signIn, signOut, SignUp } from '../controllers/authController.js'
 const router = express.Router()
 
 // /auth
-router.post('/', authController.handleLogin)
+router.post('/signin', signIn)
+
+router.post('/signup', SignUp)
+
+router.post('/signout', signOut)
 
 export default router
-// module.exports = router
