@@ -7,6 +7,7 @@ import feedback from './api/feedback.js'
 
 const router = express.Router()
 
+// api/
 router.use('/users', users)
 router.use('/tables', table)
 router.use('/rooms', room)
