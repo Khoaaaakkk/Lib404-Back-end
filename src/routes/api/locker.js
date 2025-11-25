@@ -1,16 +1,16 @@
-import lockerController from '../../controllers/lockerController.js';
-import express from 'express';
+import lockerController from '../../controllers/lockerController.js'
+import express from 'express'
 
-const router = express.Router();
+const router = express.Router()
 
 // api/lockers/
 router
-    .route('/')
-    .get(lockerController.getAllLockers)
-    .post(lockerController.createNewLocker)
-    .put(lockerController.updateLocker)
-    .delete(lockerController.deleteLocker);
+  .route('/')
+  .get(lockerController.getAllLockers)
+  .post(lockerController.createNewLocker)
+  .put(lockerController.updateLocker)
+  .delete(lockerController.deleteLocker)
 
-router.route('/:id').get(lockerController.getLockerByID);
+router.route('/:id').get(lockerController.getLockerByID)
 
-export default router;
+export default router

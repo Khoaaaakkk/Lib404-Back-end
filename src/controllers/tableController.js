@@ -1,93 +1,147 @@
-import Table from '../model/table.model.js';
-import { logEvents } from '../middleware/logEvents.js';
+import Table from '../model/table.model.js'
+import { logEvents } from '../middleware/logEvents.js'
 
 // Get all tables
 const getAllTables = async (req, res) => {
-    const tables = await Table.find({});
+  const tables = await Table.find({})
 
-    res.json(tables);
+  res.json(tables)
 
-    logEvents(`Returned table list`);
+  logEvents(`Returned table list`)
 }
 
 // Get a single table by tableID
 const getTableByTableID = async (req, res) => {
-    const table = await Table.findOne({ tableID: req.params.tableID });
-    res.json(table);
-    logEvents(`Returned table with tableID: ${req.params.tableID}`);
+  const table = await Table.findOne({ tableID: req.params.tableID })
+  res.json(table)
+  logEvents(`Returned table with tableID: ${req.params.tableID}`)
 }
 
 // Create a new table
 const createNewTable = async (req, res) => {
-    const table = await Table.create(req.body);
+  const table = await Table.create(req.body)
 
-    res.status(200).json(table);
+  res.status(200).json(table)
 
-    logEvents(`New table created: tableID: ${table.tableID}`);
+  logEvents(`New table created: tableID: ${table.tableID}`)
+}
+
+const importTables = async (req, res) => {
+  try {
+    const tables = []
+
+    // Room 101
+    for (let id = 1; id <= 31; id++) {
+      tables.push({
+        tableId: id,
+        type: id <= 16 ? 'single' : 'group',
+        roomID: 101,
+        availability: true
+      })
+    }
+
+    // Room 102
+    for (let id = 32; id <= 74; id++) {
+      tables.push({
+        tableId: id,
+        type: id <= 71 ? 'single' : 'group',
+        roomID: 102,
+        availability: true
+      })
+    }
+
+    // Room 103
+    for (let id = 75; id <= 137; id++) {
+      tables.push({
+        tableId: id,
+        type: id <= 133 ? 'single' : 'group',
+        roomID: 103,
+        availability: true
+      })
+    }
+
+    const inserted = await Table.insertMany(tables)
+    res
+      .status(200)
+      .json({ message: 'Tables imported successfully', count: inserted.length })
+    logEvents(`Imported ${inserted.length} tables into database`)
+  } catch (error) {
+    console.error('Error importing tables:', error.message)
+    res.status(500).json({ message: 'Server error during import' })
+  }
 }
 
 // Update an existing table
 const updateTable = async (req, res) => {
-    const table = await Table.findOne({ tableID: req.body.tableID });
+  const table = await Table.findOne({ tableID: req.body.tableID })
 
-    if(!table) {
-        res.status(404).json({ message: 'Table not found' });
-        logEvents(`Table with tableID ${req.body.tableID} not found for update`);
-        return;
-    }
-    // Update the table fields
-    await table.updateOne({
-        tableID: req.body.tableID ? req.body.tableID : table.tableID,
-        type: req.body.type ? req.body.type : table.type, 
-        roomID: req.body.roomID ? req.body.roomID : table.roomID,
-        availability: req.body.availability !== undefined ? req.body.availability : table.availability,
-        date: req.body.date ? req.body.date : table.date
-    });
-    // Fetch the updated table
-    const updatedTable = await Table.findOne({ tableID: req.body.tableID });
-    res.json(updatedTable);
-    logEvents(`Table with tableID ${req.body.tableID} has been updated`);
+  if (!table) {
+    res.status(404).json({ message: 'Table not found' })
+    logEvents(`Table with tableID ${req.body.tableID} not found for update`)
+    return
+  }
+  // Update the table fields
+  await table.updateOne({
+    tableID: req.body.tableID ? req.body.tableID : table.tableID,
+    type: req.body.type ? req.body.type : table.type,
+    roomID: req.body.roomID ? req.body.roomID : table.roomID,
+    availability:
+      req.body.availability !== undefined
+        ? req.body.availability
+        : table.availability,
+    date: req.body.date ? req.body.date : table.date
+  })
+  // Fetch the updated table
+  const updatedTable = await Table.findOne({ tableID: req.body.tableID })
+  res.json(updatedTable)
+  logEvents(`Table with tableID ${req.body.tableID} has been updated`)
 }
-
 
 //Update table availability status
 const updateTableAvailability = async (req, res) => {
-    const {id} = req.params;
-    const { availability, date } = req.body;
+  const { id } = req.params
+  const { availability, date } = req.body
 
-    const table = await Table.findOneAndUpdate({ tableID: id }, { availability, date }, { new: true });
+  const table = await Table.findOneAndUpdate(
+    { tableID: id },
+    { availability, date },
+    { new: true }
+  )
 
-if (!table) {
-    logEvents(`Table with tableID ${id} not found for availability update`);
-    return res.status(404).json({ message: 'Table not found' });
-}
+  if (!table) {
+    logEvents(`Table with tableID ${id} not found for availability update`)
+    return res.status(404).json({ message: 'Table not found' })
+  }
 
-    res.json(table);
-    logEvents(`Table with tableID ${id} availability updated to ${availability} on date ${date}`);
+  res.json(table)
+  logEvents(
+    `Table with tableID ${id} availability updated to ${availability} on date ${date}`
+  )
 }
 
 // Delete a table
 const deleteTable = async (req, res) => {
-    const {id} = req.params;
-    const deleted = await Table.deleteOne({ tableID: id });
+  const { id } = req.params
+  const deleted = await Table.deleteOne({ tableID: id })
 
-    if (!deleted.deletedCount) {
-        logEvents(`Table with tableID ${id} does not exist`);
-        res.status(404).json({ message: 'Table not found' });
-        return;
-    }
+  if (!deleted.deletedCount) {
+    logEvents(`Table with tableID ${id} does not exist`)
+    res.status(404).json({ message: 'Table not found' })
+    return
+  }
 
-    res.json({ message: `Table with tableID ${id} has been deleted` });
+  res.json({ message: `Table with tableID ${id} has been deleted` })
 
-    logEvents(`Table with tableID ${id} has been deleted`);
+  logEvents(`Table with tableID ${id} has been deleted`)
 }
 
 // Get table controller exports
-export default { 
-    getAllTables,   
-    createNewTable,
-    deleteTable,
-    getTableByTableID,
-    updateTable,
-    updateTableAvailability
+export default {
+  getAllTables,
+  createNewTable,
+  importTables,
+  deleteTable,
+  getTableByTableID,
+  updateTable,
+  updateTableAvailability
 }
