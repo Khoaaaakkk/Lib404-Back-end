@@ -6,16 +6,17 @@ import express from 'express'
 const router = express.Router()
 
 //api/tables/
+router.route('/import').get(importTables)
+
 router
   .route('/')
   .get(tableController.getAllTables)
   .post(tableController.createNewTable)
-  .put(tableController.updateTable)
-  .get(tableController.getTableByTableID)
+
 router
   .route('/:id')
-
   .delete(tableController.deleteTable)
+  .get(tableController.getTableByTableID)
+  .put(tableController.updateTable)
 
-router.route('/import').get(importTables)
 export default router

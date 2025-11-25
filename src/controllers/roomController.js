@@ -1,63 +1,77 @@
-import Room from '../model/room.model.js';
-import { logEvents } from '../middleware/logEvents.js'; 
+import Room from '../model/room.model.js'
+import { logEvents } from '../middleware/logEvents.js'
 
 // Get all rooms
 const getAllRooms = async (req, res) => {
-    const rooms = await Room.find({});
-    res.json(rooms);
-    logEvents(`Returned room list`);
+  const rooms = await Room.find({})
+  res.json(rooms)
+  logEvents(`Returned room list`)
 }
 
 //Get room by ID
 const getRoomByID = async (req, res) => {
-    const room = await Room.findOne({ roomID: req.params.roomID });
-    if (!room) {
-        res.status(404).json({ message: 'Room not found' });
-        logEvents(`Room with roomID ${req.params.roomID} not found`);
-        return;
-    }
+  console.log(req.params.roomId)
 
-    res.json(room);
-    logEvents(`Returned room with roomID: ${req.params.roomID}`);
+  const roomID = parseInt(req.params.roomId, 10)
+  const room = await Room.findOne({ roomId: req.params.id })
+
+  if (!room) {
+    res.status(404).json({ message: 'Room not found' })
+    logEvents(`Room with roomID ${req.params.id} not found`)
+    return
+  }
+
+  res.json(room)
+  logEvents(`Returned room with roomID: ${req.params.id}`)
 }
 
 // Create new room
 const createNewRoom = async (req, res) => {
-    const room = await Room.create(req.body);
-    res.status(201).json(room);
-    logEvents(`Created new room with roomID: ${room.roomID}`);
-}   
+  const room = await Room.create(req.body)
+  res.status(201).json(room)
+  logEvents(`Created new room with roomID: ${room.roomId}`)
+}
 
 // Update room details
 const updateRoom = async (req, res) => {
-    const room = await Room.findOne({ roomID: req.body.roomID });
-    if (!room) {
-        res.status(404).json({ message: 'Room not found' });
-        logEvents(`Room with roomID ${req.body.roomID} not found for update`);
-        return;
-    }
+  const { id } = req.params
+  const room = await Room.findOne({ roomId: id })
 
-    await room.updateOne({
-        roomID: req.body.roomID ? req.body.roomID : room.roomID,
-        type: req.body.type ? req.body.type : room.type,
-        floorID: req.body.floorID ? req.body.floorID : room.floorID
-    });
+  if (!room) {
+    res.status(404).json({ message: 'Room not found' })
+    logEvents(`Room with roomID ${id} not found for update`)
+    return
+  }
 
-    const updatedRoom = await Room.findOne({ roomID: req.body.roomID });
-    res.json(updatedRoom);
-    logEvents(`Room with roomID ${req.body.roomID} has been updated`);
+  await room.updateOne({
+    roomId: req.body.roomId ? req.body.roomId : room.roomId,
+    type: req.body.type ? req.body.type : room.type,
+    floorId: req.body.floorId ? req.body.floorId : room.floorId
+  })
+
+  const updatedRoom = await Room.findOne({ roomId: id })
+  res.json(updatedRoom)
+  logEvents(`Room with roomID ${id} has been updated`)
 }
 
 // Delete room
 const deleteRoom = async (req, res) => {
-    const room = await Room.deleteOne({ roomID: req.body.roomID });
-    if (!room.deletedCount) {
-        res.status(404).json({ message: 'Room not found' });
-        logEvents(`Room with roomID ${req.body.roomID} not found for deletion`);
-        return;
-    }
-    res.json({ message: 'Room deleted successfully' });
-    logEvents(`Room with roomID ${req.body.roomID} has been deleted`);
+  const { id } = req.params
+  const room = await Room.deleteOne({ roomId: id })
+
+  if (!room.deletedCount) {
+    res.status(404).json({ message: 'Room not found' })
+    logEvents(`Room with roomID ${id} not found for deletion`)
+    return
+  }
+  res.json({ message: 'Room deleted successfully' })
+  logEvents(`Room with roomID ${id} has been deleted`)
 }
 
-export default { getAllRooms, getRoomByID, createNewRoom, updateRoom, deleteRoom };
+export default {
+  getAllRooms,
+  getRoomByID,
+  createNewRoom,
+  updateRoom,
+  deleteRoom
+}

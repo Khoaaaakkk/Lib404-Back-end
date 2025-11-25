@@ -8,9 +8,11 @@ router
   .route('/')
   .get(roomController.getAllRooms)
   .post(roomController.createNewRoom)
+
+router
+  .route('/:roomID')
+  .get(roomController.getRoomByID)
   .put(roomController.updateRoom)
   .delete(roomController.deleteRoom)
-
-router.route('/:roomID').get(roomController.getRoomByID)
 
 export default router

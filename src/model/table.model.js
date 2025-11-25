@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const TableSchema = mongoose.Schema(
   {
-    tableID: {
+    tableId: {
       type: Number,
       required: true,
       unique: true,
@@ -15,7 +15,7 @@ const TableSchema = mongoose.Schema(
       required: true
     },
 
-    roomID: {
+    roomId: {
       type: Number,
       required: true,
       ref: 'Room'
@@ -24,11 +24,6 @@ const TableSchema = mongoose.Schema(
     availability: {
       type: Boolean,
       default: true
-    },
-
-    date: {
-      type: Date,
-      default: null
     }
   },
 

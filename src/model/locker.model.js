@@ -1,14 +1,14 @@
 import mongoose from 'mongoose'
 
 const LockerSchema = mongoose.Schema({
-  lockerID: {
+  lockerId: {
     type: Number,
     required: true,
     unique: true,
     trim: true
   },
 
-  status: {
+  availability: {
     type: Boolean,
     default: false,
     required: true

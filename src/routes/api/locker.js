@@ -8,9 +8,10 @@ router
   .route('/')
   .get(lockerController.getAllLockers)
   .post(lockerController.createNewLocker)
-  .put(lockerController.updateLocker)
+
+router
+  .route('/:id')
+  .get(lockerController.getLockerByID)
   .delete(lockerController.deleteLocker)
-
-router.route('/:id').get(lockerController.getLockerByID)
-
+  .put(lockerController.updateLocker)
 export default router
