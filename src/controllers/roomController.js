@@ -13,7 +13,7 @@ const getRoomByID = async (req, res) => {
   console.log(req.params.roomId)
 
   const roomID = parseInt(req.params.roomId, 10)
-  const room = await Room.findOne({ roomID: req.params.id })
+  const room = await Room.findOne({ roomId: req.params.id })
 
   if (!room) {
     res.status(404).json({ message: 'Room not found' })
