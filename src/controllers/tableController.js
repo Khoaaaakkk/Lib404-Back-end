@@ -15,7 +15,7 @@ const getTableByTableID = async (req, res) => {
   console.log(req.params.id)
 
   const tableID = parseInt(req.params.id, 10)
-  const table = await Table.findOne({ tableID: req.params.id })
+  const table = await Table.findOne({ tableId: req.params.id })
 
   if (!table) {
     res.status(404).json({ message: 'Table not found' })

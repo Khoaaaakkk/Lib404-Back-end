@@ -10,9 +10,9 @@ const getAllLockers = async (req, res) => {
 
 // Get a single locker by lockerID
 const getLockerByID = async (req, res) => {
-  console.log(req.params.id)
+  console.log(req.params.lockerId)
 
-  const lockerID = parseInt(req.params.id, 10)
+  const lockerID = parseInt(req.params.lockerId, 10)
   const locker = await Locker.findOne({ lockerId: req.params.id })
 
   if (!locker) {

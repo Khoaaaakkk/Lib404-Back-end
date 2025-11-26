@@ -5,7 +5,6 @@ const RoomSchema = mongoose.Schema({
     type: Number,
     required: true,
     unique: true,
-    trim: true
   },
 
   type: {
@@ -16,7 +15,6 @@ const RoomSchema = mongoose.Schema({
 
   floorId: {
     type: String,
-    ref: 'Floor',
     required: true
   }
 })

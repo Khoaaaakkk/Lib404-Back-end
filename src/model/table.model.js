@@ -18,7 +18,6 @@ const TableSchema = mongoose.Schema(
     roomId: {
       type: Number,
       required: true,
-      ref: 'Room'
     },
 
     availability: {

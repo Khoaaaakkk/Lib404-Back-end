@@ -10,7 +10,7 @@ router
   .post(roomController.createNewRoom)
 
 router
-  .route('/:roomID')
+  .route('/:id')
   .get(roomController.getRoomByID)
   .put(roomController.updateRoom)
   .delete(roomController.deleteRoom)
