@@ -27,6 +27,8 @@ const getRoomByID = async (req, res) => {
 
 // Create new room
 const createNewRoom = async (req, res) => {
+  console.log(req.body)
+
   const room = await Room.create(req.body)
   res.status(201).json(room)
   logEvents(`Created new room with roomId: ${room.roomId}`)
