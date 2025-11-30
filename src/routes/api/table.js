@@ -19,4 +19,8 @@ router
   .get(tableController.getTableByTableID)
   .put(tableController.updateTable)
 
+router
+  .route('/:id/availability')
+  .put(tableController.updateTableAvailability)
+
 export default router

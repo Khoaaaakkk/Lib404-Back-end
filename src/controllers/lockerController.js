@@ -12,17 +12,17 @@ const getAllLockers = async (req, res) => {
 const getLockerByID = async (req, res) => {
   console.log(req.params.lockerId)
 
-  const lockerID = parseInt(req.params.lockerId, 10)
-  const locker = await Locker.findOne({ lockerId: req.params.id })
+  const {id} =req.params
+  const locker = await Locker.findOne({ lockerId: id })
 
   if (!locker) {
     res.status(404).json({ message: 'Locker not found' })
-    logEvents(`Locker with lockerID ${req.params.id} not found`)
+    logEvents(`Locker with lockerID ${id} not found`)
     return
   }
 
   res.json(locker)
-  logEvents(`Returned locker with lockerID: ${req.params.id}`)
+  logEvents(`Returned locker with lockerID: ${id}`)
 }
 
 // Create a new locker

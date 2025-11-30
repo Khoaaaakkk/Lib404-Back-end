@@ -12,17 +12,17 @@ const getAllRooms = async (req, res) => {
 const getRoomByID = async (req, res) => {
   console.log(req.params.roomId)
 
-  const roomID = parseInt(req.params.roomId, 10)
-  const room = await Room.findOne({ roomId: req.params.id })
+  const {id} = req.params
+  const room = await Room.findOne({ roomId: id })
 
   if (!room) {
     res.status(404).json({ message: 'Room not found' })
-    logEvents(`Room with roomID ${req.params.id} not found`)
+    logEvents(`Room with roomID ${id} not found`)
     return
   }
 
   res.json(room)
-  logEvents(`Returned room with roomID: ${req.params.id}`)
+  logEvents(`Returned room with roomID: ${id}`)
 }
 
 // Create new room

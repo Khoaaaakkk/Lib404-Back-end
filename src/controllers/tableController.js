@@ -14,17 +14,17 @@ const getAllTables = async (req, res) => {
 const getTableByTableID = async (req, res) => {
   console.log(req.params.id)
 
-  const tableID = parseInt(req.params.id, 10)
-  const table = await Table.findOne({ tableId: req.params.id })
+  const {id} = req.params
+  const table = await Table.findOne({ tableId: id })
 
   if (!table) {
     res.status(404).json({ message: 'Table not found' })
-    logEvents(`Table with tableID ${req.params.id} not found`)
+    logEvents(`Table with tableID ${id} not found`)
     return
   }
 
   res.json(table)
-  logEvents(`Returned table with tableID: ${req.params.id}`)
+  logEvents(`Returned table with tableID: ${id}`)
 }
 
 // Create a new table
