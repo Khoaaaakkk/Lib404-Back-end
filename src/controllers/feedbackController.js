@@ -10,9 +10,19 @@ const getAllFeedback = async (req, res) => {
 
 // Get feedback by email
 const getFeedbackByEmail = async (req, res) => {
-    const report = await feedback.findOne({ email: req.params.email });
+    console.log(req.params.email);
+    
+    const {email} = req.params;
+    const report = await feedback.findOne({ email: email });
+
+    if (!report) {
+        res.status(404).json({ message: 'Feedback not found' });
+        logEvents(`Feedback with email ${email} not found`);
+        return;
+    }
+    
     res.json(report);
-    logEvents(`Returned feedback with email: ${req.params.email}`);
+    logEvents(`Returned feedback with email: ${email}`);
 }
 
 // Create new feedback
