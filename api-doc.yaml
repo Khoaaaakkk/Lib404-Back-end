@@ -282,45 +282,6 @@ paths:
         '404':
           description: Table not found
 
-  /tables/{id}/availability:
-    put:
-      tags:
-        - Tables
-      summary: Update table availability status by TableId.
-      description: Update the availability status of a table by TableId.
-      operationId: updateTableAvailability
-      parameters:
-        - name: id
-          in: path
-          description: ID of table to update availability
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Update table availability status
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                availability:
-                  type: boolean
-                  example: true
-                date:
-                  type: string
-                  format: date
-                  example: "2024-06-01"
-        required: true
-      responses:
-        '200':
-          description: Table availability updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Table'
-        '404':
-          description: Table not found
-
   /lockers:
     post:
       tags:
