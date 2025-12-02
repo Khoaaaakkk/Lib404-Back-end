@@ -56,6 +56,7 @@ const createNewTable = async (req, res) => {
 // Update an existing table
 const updateTable = async (req, res) => {
   const { id } = req.params
+  const user = req.body.username
   const table = await Table.findOne({ tableId: id })
 
   if (!table) {
@@ -63,43 +64,62 @@ const updateTable = async (req, res) => {
     logEvents(`Table with tableID ${id} not found for update`)
     return
   }
-  // Update the table fields
-  await table.updateOne({
-    tableID: req.body.tableId ? req.body.tableId : table.tableId,
-    type: req.body.type ? req.body.type : table.type,
-    roomID: req.body.roomId ? req.body.roomId : table.roomId,
-    availability:
-      req.body.availability !== undefined
-        ? req.body.availability
-        : table.availability,
-    date: req.body.date ? req.body.date : table.date
-  })
-  // Fetch the updated table
-  const updatedTable = await Table.findOne({ tableId: id })
-  res.json(updatedTable)
+
+  if (!user) {
+    res.status(400).json({ message: 'Username is required to update table' })
+    logEvents(`No username provided to update table with tableID ${id}`)
+    return
+  }
+
+  if (table.availability === true) {
+    table.username = user
+    table.availability = false
+    await table.save()
+    res.json(table)
+    logEvents(`Table with tableID ${id} has been assigned to user ${user}`)
+  } else {
+    logEvents(`Table with tableID ${id} is not available for user ${user}`)
+    res.status(400).json({ message: 'Table is not available' })
+    return
+  }
+  // // Update the table fields
+  // await table.updateOne({
+  //   tableID: req.body.tableId ? req.body.tableId : table.tableId,
+  //   type: req.body.type ? req.body.type : table.type,
+  //   roomID: req.body.roomId ? req.body.roomId : table.roomId,
+  //   availability:
+  //     req.body.availability !== undefined
+  //       ? req.body.availability
+  //       : table.availability,
+  //   date: req.body.date ? req.body.date : table.date
+  // })
+  // // Fetch the updated table
+  // const updatedTable = await Table.findOne({ tableId: id })
+  // res.json(updatedTable)
   logEvents(`Table with tableID ${id} has been updated`)
 }
 
-//Update table availability status
-const updateTableAvailability = async (req, res) => {
+//Clear table assignment
+const clearTable = async (req, res) => {
   const { id } = req.params
-  const { availability, date } = req.body
-
-  const table = await Table.findOneAndUpdate(
-    { tableId: id },
-    { availability, date },
-    { new: true }
-  )
+  const table = await Table.findOne({ tableId: id })
 
   if (!table) {
-    logEvents(`Table with tableID ${id} not found for availability update`)
-    return res.status(404).json({ message: 'Table not found' })
+    res.status(404).json({ message: 'Table not found' })
+    logEvents(`Table with tableID ${id} not found for clearing`)
+    return
   }
 
-  res.json(table)
-  logEvents(
-    `Table with tableID ${id} availability updated to ${availability} on date ${date}`
-  )
+  if (table.availability === false) {
+    table.username = null
+    table.availability = true
+    await table.save()
+    res.json(table)
+    logEvents(`Table with tableID ${id} has been cleared and is now available`)
+  }
+
+  logEvents(`Table with tableID ${id} is already available`)
+  return res.status(400).json({ message: 'Table is already available' })
 }
 
 // Delete a table
@@ -187,6 +207,6 @@ export default {
   getTableByTableID,
   getTableByRoomID,
   updateTable,
-  updateTableAvailability,
+  clearTable,
   importTables
 }
