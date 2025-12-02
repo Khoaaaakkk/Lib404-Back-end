@@ -1,6 +1,5 @@
 import lockerController from '../../controllers/lockerController.js'
 import express from 'express'
-import importLockers from './importLocker.js'
 
 const router = express.Router()
 
@@ -10,7 +9,7 @@ router
   .get(lockerController.getAllLockers)
   .post(lockerController.createNewLocker)
 
-router.route('/import').get(importLockers) // import locker
+router.route('/import').get(lockerController.importLockers) // import locker
 
 router
   .route('/:id')
