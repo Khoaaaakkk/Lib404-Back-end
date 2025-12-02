@@ -179,6 +179,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Table'
+        '500':
+          description: Internal server error
 
     get:
       tags:
@@ -195,28 +197,104 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Table'
+        '500':
+          description: Internal server error
+
+  /tables/import:
+    post:
+      tags:
+        - Tables
+      summary: Import multiple tables to the library.
+      description: Import multiple tables to the library.
+      operationId: importTables
+      requestBody:
+        description: Import multiple tables to the library
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Table'
+        required: true
+      responses:
+        '200':
+          description: Tables imported successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Table'
+        '500':
+          description: Internal server error
+
+  /tables/room/{roomId}:
+    get:
+      tags:
+        - Tables
+      summary: Get tables by RoomId
+      description: Get table details by RoomId, including tableId, availability, and date.
+      operationId: getTablesByRoomID
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          description: Room ID to return tables for
+          schema:
+            type: string
+            example: "101"
+      responses:
+        '200':
+          description: Returned tables with roomID
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Table'
+              examples:
+                example-1:
+                  summary: Example tables response
+                  value:
+                    - tableId: "1"
+                      roomId: "101"
+                      availability: true
+                      date: "2025-12-02"
+                    - tableId: "2"
+                      roomId: "101"
+                      availability: false
+                      date: "2025-12-02"
+        '404':
+          description: Tables not found
+        '500':
+          description: Internal server error
 
   /tables/{id}:
     put:
       tags:
-        - Tables
-      summary: Update an existing table by TableId.
-      description: Update an existing table information.
+      - Tables
+      summary: Update table availability and assign a username
+      description: Update a table's availability status and assign it to a user
       operationId: updateTable
       parameters:
-        - name: id
-          in: path
-          description: ID of table to update
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        description: ID of the table to update
+        required: true
+        schema:
+          type: string
       requestBody:
-        description: Update an existent table in the library
+        description: Update an existing table
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Table'
-        required: true
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username to assign to the table
+                  example: "23521677"
       responses:
         '200':
           description: Table updated successfully
@@ -224,8 +302,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Table'
+              example:
+                tableId: 1
+                type: "Single"
+                roomId: 101
+                availability: false
+                username: "23521677"
+        '400':
+          description: Bad request (missing username or table not available)
         '404':
           description: Table not found
+        '500':
+          description: Internal server error
+
 
     get:
       tags:
@@ -251,6 +340,8 @@ paths:
                   $ref: '#/components/schemas/Table'
         '404':
           description: Table not found
+        '500':
+          description: Internal server error
 
     delete:
       tags:
@@ -277,10 +368,38 @@ paths:
           description: Table with tableID has been deleted
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Table'
+              example:
+                message: "Table deleted successfully"
         '404':
           description: Table not found
+        '500':
+          description: Internal server error
+          
+  /tables/{id}/clear:
+    get:
+        tags:
+          - Tables
+        summary: Clear table reservation by TableId.
+        description: Clear table reservation by TableId.
+        operationId: clearTableReservation
+        parameters:
+          - name: id
+            in: path
+            description: ID of table to clear reservation
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Table reservation cleared successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Table'
+          '404':
+            description: Table not found
+          '500':
+            description: Internal server error
 
   /lockers:
     post:
@@ -511,11 +630,15 @@ components:
         availability:
           type: boolean
           example: true
+        username:
+          type: string
+          example: "23521677"
       required:
         - tableId
         - type
         - roomId
         - availability
+        - username
     
     Locker:
       properties:
@@ -525,22 +648,34 @@ components:
         availability:
           type: boolean
           example: true
+        username:
+          type: string
+          example: "23521677"
       required:
         - lockerId
         - availability
+        - username
 
     Feedback:
       properties:
-        feedbackId:
+        username:
+          type: string
+          example: "23521677"
+        email:
+          type: string
+          example: "23521677@gm.uit.edu.vn"
+        feedbackType:
+          type: string
+          example: "Suggestion"
+        rating:
           type: integer
-          example: 1
-        userId:
-          type: integer
-          example: 123
+          example: 5
         message:
           type: string
           example: "Great service!"
       required:
-        - feedbackId
-        - userId
+        - username
+        - email
+        - feedbackType
+        - rating
         - message
