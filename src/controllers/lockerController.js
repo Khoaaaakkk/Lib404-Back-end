@@ -76,27 +76,29 @@ const updateLocker = async (req, res) => {
   logEvents(`Locker with lockerID ${id} has been updated with user ${user}`)
 }
 
-// // const clearLocker = async (req, res) => {
-// //   const { id } = req.params
+const clearLocker = async (req, res) => {
+  const { id } = req.params
 
-// //   const locker = await Locker.findOne({ lockerId: id })
+  const locker = await Locker.findOne({ lockerId: id })
 
-// //   if (!locker) {
-// //     res.status(404).json({ message: 'Locker not found' })
-// //     logEvents(`Locker with lockerID ${id} not found for clearing`)
-// //     return
-// //   }
+  if (!locker) {
+    res.status(404).json({ message: 'Locker not found' })
+    logEvents(`Locker with lockerID ${id} not found for clearing`)
+    return
+  }
 
-//   if (locker.availability === false) {
-//     locker.username = null
-//     locker.availability = true
-//     await locker.save()
-//     res.json(locker)
-//     res.status(400).json({ message: 'Locker is already available' })
-//     logEvents(`Locker with lockerID ${id} is already available`)
-//     return
-//   }
-// }
+  if (locker.availability === false) {
+    locker.username = null
+    locker.availability = true
+    await locker.save()
+    logEvents(`Locker with lockerID ${id} is already available`)
+    res.json(locker)
+    return
+  }
+
+  logEvents(`Locker with lockerID ${id} is already available`)
+  return res.status(400).json({ message: 'Locker is already available' })
+}
 
 // Delete a locker
 const deleteLocker = async (req, res) => {
@@ -127,10 +129,12 @@ const importLockers = async (req, res) => {
       })
     }
 
-    res.status(200).json({
-      message: 'Lockers imported successfully',
-      count: inserted.length
-    })
+    for (let id = 77; id <= 136; id++) {
+      await Locker.create({
+        lockerId: id,
+        availability: true
+      })
+    }
   } catch (error) {
     console.error('Error importing lockers:', error)
     res
@@ -144,6 +148,7 @@ export default {
   getLockerByID,
   createNewLocker,
   updateLocker,
+  clearLocker,
   deleteLocker,
   importLockers
 }

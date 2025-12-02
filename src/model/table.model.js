@@ -24,6 +24,10 @@ const TableSchema = mongoose.Schema(
     availability: {
       type: Boolean,
       default: true
+    },
+
+    username: {
+      type: String
     }
   },
 
