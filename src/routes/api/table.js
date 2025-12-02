@@ -6,12 +6,16 @@ import express from 'express'
 const router = express.Router()
 
 //api/tables/
+<<<<<<< Updated upstream
 router.route('/import').get(importTables)
 
+=======
+>>>>>>> Stashed changes
 router
   .route('/')
   .get(tableController.getAllTables)
   .post(tableController.createNewTable)
+<<<<<<< Updated upstream
 
 router
   .route('/:id')
@@ -22,5 +26,14 @@ router
 router
   .route('/:id/availability')
   .put(tableController.updateTableAvailability)
+=======
+  .put(tableController.updateTable)
 
+router
+  .route('/:id')
+  .get(tableController.getTableByTableID)
+  .delete(tableController.deleteTable)
+>>>>>>> Stashed changes
+
+router.route('/import').get(importTables)
 export default router

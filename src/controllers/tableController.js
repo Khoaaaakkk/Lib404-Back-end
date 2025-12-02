@@ -14,17 +14,30 @@ const getAllTables = async (req, res) => {
 const getTableByTableID = async (req, res) => {
   console.log(req.params.id)
 
+<<<<<<< Updated upstream
   const {id} = req.params
   const table = await Table.findOne({ tableId: id })
 
   if (!table) {
     res.status(404).json({ message: 'Table not found' })
     logEvents(`Table with tableID ${id} not found`)
+=======
+  const tableID = parseInt(req.params.id, 10)
+  const table = await Table.findOne({ tableID: req.params.id })
+
+  if (!table) {
+    res.status(404).json({ message: 'Table not found' })
+    logEvents(`Table with tableID ${req.params.id} not found`)
+>>>>>>> Stashed changes
     return
   }
 
   res.json(table)
+<<<<<<< Updated upstream
   logEvents(`Returned table with tableID: ${id}`)
+=======
+  logEvents(`Returned table with tableID: ${req.params.id}`)
+>>>>>>> Stashed changes
 }
 
 // Create a new table
@@ -33,7 +46,11 @@ const createNewTable = async (req, res) => {
 
   res.status(200).json(table)
 
+<<<<<<< Updated upstream
   logEvents(`New table created: tableID: ${table.tableId}`)
+=======
+  logEvents(`New table created: tableID: ${table.tableID}`)
+>>>>>>> Stashed changes
 }
 
 // Update an existing table
