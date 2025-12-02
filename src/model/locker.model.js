@@ -12,7 +12,10 @@ const LockerSchema = mongoose.Schema({
     type: Boolean,
     default: false,
     required: true
+  },
+
+  username: {
+    type: String
   }
 })
-
 export default mongoose.model('Locker', LockerSchema)

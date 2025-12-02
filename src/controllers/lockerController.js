@@ -12,7 +12,7 @@ const getAllLockers = async (req, res) => {
 const getLockerByID = async (req, res) => {
   console.log(req.params.lockerId)
 
-  const {id} =req.params
+  const { id } = req.params
   const locker = await Locker.findOne({ lockerId: id })
 
   if (!locker) {
@@ -35,6 +35,8 @@ const createNewLocker = async (req, res) => {
 // Update an existing locker
 const updateLocker = async (req, res) => {
   const { id } = req.params
+  const user = req.body.username
+
   const locker = await Locker.findOne({ lockerId: id })
 
   if (!locker) {
@@ -43,17 +45,58 @@ const updateLocker = async (req, res) => {
     return
   }
 
-  await locker.updateOne({
-    lockerID: req.body.lockerId ? req.body.lockerId : locker.lockerId,
-    availability:
-      req.body.availability !== undefined
-        ? req.body.availability
-        : locker.availability
-  })
-  const updatedLocker = await Locker.findOne({ lockerId: id })
-  res.json(updatedLocker)
-  logEvents(`Locker with lockerID ${id} has been updated`)
+  // handle no user res error
+  if (!user) {
+    res.status(400).json({ message: 'Username is required to assign locker' })
+    logEvents(`No username provided to assign locker with lockerID ${id}`)
+    return
+  }
+
+  if (locker.availability === true) {
+    locker.username = user
+    locker.availability = false
+    await locker.save()
+    res.json(locker)
+    logEvents(`Locker with lockerID ${id} has been assigned to user ${user}`)
+  } else {
+    // locker not available
+    res.status(400).json({ message: 'Locker is not available' })
+    logEvents(`Locker with lockerID ${id} is not available for user ${user}`)
+  }
+
+  // await locker.updateOne({
+  //   lockerID: req.body.lockerId ? req.body.lockerId : locker.lockerId,
+  //   availability:
+  //     req.body.availability !== undefined
+  //       ? req.body.availability
+  //       : locker.availability
+  // })
+  // const updatedLocker = await Locker.findOne({ lockerId: id })
+  // res.json(updatedLocker)
+  logEvents(`Locker with lockerID ${id} has been updated with user ${user}`)
 }
+
+// // const clearLocker = async (req, res) => {
+// //   const { id } = req.params
+
+// //   const locker = await Locker.findOne({ lockerId: id })
+
+// //   if (!locker) {
+// //     res.status(404).json({ message: 'Locker not found' })
+// //     logEvents(`Locker with lockerID ${id} not found for clearing`)
+// //     return
+// //   }
+
+//   if (locker.availability === false) {
+//     locker.username = null
+//     locker.availability = true
+//     await locker.save()
+//     res.json(locker)
+//     res.status(400).json({ message: 'Locker is already available' })
+//     logEvents(`Locker with lockerID ${id} is already available`)
+//     return
+//   }
+// }
 
 // Delete a locker
 const deleteLocker = async (req, res) => {
