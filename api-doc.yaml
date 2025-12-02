@@ -1,0 +1,546 @@
+openapi: 3.0.4
+info:
+  title: Library Reservation API
+  description: |-
+    API for the library reservation website, allowing users to book study desks and lockers. 
+    Endpoints provide functionality to manage reservations, check desk/locker availability, 
+    create, cancel, or update reservations. 
+    Designed for integration with web to enhance the user experience in the library.
+
+    Some useful links:
+    - [The Library Reservation repository]
+    - [The source API definition for the Library Reservation]
+  termsOfService: http://libraryreservation.com/terms/
+  contact:
+    email: support@libraryreservation.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.12
+servers:
+  - url: http://localhost:8080
+    description: Local server
+tags:
+  - name: Rooms
+    description: Library study rooms management
+  - name: Tables
+    description: Library study tables reservation and availability
+  - name: Users
+    description: Operations about user registration, login, profile management
+  - name: Lockers
+    description: Library locker reservation and availability
+  - name: Feedback
+    description: User feedback and support requests
+paths:
+  /rooms:
+    post:
+      tags:
+        - Rooms
+      summary: Add a new room to the library.
+      description: Add a new room to the library.
+      operationId: createNewRoom
+      requestBody:
+        description: Add a new room to the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+        required: true
+      responses:
+        '200':
+          description: Room added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          description: Room not added
+
+    get:
+      tags:
+        - Rooms
+      summary: Get all rooms
+      description: Retrieve a list of all rooms in the library
+      operationId: getAllRooms
+      responses:
+        '200':
+          description: List of rooms returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+
+  /rooms/{id}:
+    put:
+      tags:
+        - Rooms
+      summary: Update an existing room by id.
+      description: Update an existing room by id.
+      operationId: updateRoom
+      parameters:
+        - name: id
+          in: path
+          description: ID of room to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent room in the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+        required: true
+      responses:
+        '200':
+          description: Room updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '404':
+          description: Room not found
+
+    get:
+      tags:
+        - Rooms
+      summary: Get room by id.
+      description: Get room details by ID.
+      operationId: getRoomByID
+      parameters:
+        - name: id
+          in: path
+          description: ID of room to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Room details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '400':
+          description: Invalid room ID
+
+    delete:
+      tags:
+        - Rooms
+      summary: Delete a room from the library.
+      description: Delete a room from the library.
+      operationId: deleteRoom
+      parameters:
+        - name: id
+          in: path
+          description: ID of room to delete
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Delete an existing room from the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+        required: true
+      responses:
+        '200':
+          description: Room deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          description: Room not deleted
+
+  /tables:
+    post:
+      tags:
+        - Tables
+      summary: Add a new table to the library.
+      description: Add a new table to the library.
+      operationId: createNewTable
+      requestBody:
+        description: Add a new table to the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Table'
+        required: true
+      responses:
+        '200':
+          description: New table created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+
+    get:
+      tags:
+        - Tables
+      summary: Get all tables
+      description: Retrieve a list of all tables in the library
+      operationId: getAllTables
+      responses:
+        '200':
+          description: Returned table list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Table'
+
+  /tables/{id}:
+    put:
+      tags:
+        - Tables
+      summary: Update an existing table by TableId.
+      description: Update an existing table information.
+      operationId: updateTable
+      parameters:
+        - name: id
+          in: path
+          description: ID of table to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent table in the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Table'
+        required: true
+      responses:
+        '200':
+          description: Table updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '404':
+          description: Table not found
+
+    get:
+      tags:
+        - Tables
+      summary: Get table by TableId.
+      description: Get table details by TableId.
+      operationId: getTableByTableID
+      parameters:
+        - name: id
+          in: path
+          description: ID of table to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returned table with tableID
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Table'
+        '404':
+          description: Table not found
+
+    delete:
+      tags:
+        - Tables
+      summary: Delete a table from the library by TableId.
+      description: Delete a table from the library.
+      operationId: deleteTable
+      parameters:
+        - name: id
+          in: path
+          description: ID of table to delete
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Delete an existing table from the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Table'
+        required: true
+      responses:
+        '200':
+          description: Table with tableID has been deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '404':
+          description: Table not found
+
+  /lockers:
+    post:
+      tags:
+        - Lockers
+      summary: Add a new locker to the library.
+      description: Add a new locker to the library.
+      operationId: createNewLocker
+      requestBody:
+        description: Add a new locker to the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Locker'
+        required: true
+      responses:
+        '200':
+          description: Locker added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Locker'
+                
+    get:
+      tags:
+        - Lockers
+      summary: Get all lockers
+      description: Retrieve a list of all lockers in the library
+      operationId: getAllLockers
+      responses:
+        '200':
+          description: List of lockers returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Locker'
+
+  /lockers/{id}:
+    put:
+      tags:
+        - Lockers
+      summary: Update locker availability status by LockerId.
+      description: Update the availability status of a locker by LockerId.
+      operationId: updateLocker
+      parameters:
+        - name: id
+          in: path
+          description: ID of locker to update availability
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update locker availability status
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                availability:
+                  type: boolean
+                  example: true
+                date:
+                  type: string
+                  format: date
+                  example: "2024-06-01"
+        required: true
+      responses:
+        '200':
+          description: Locker with lockerID has been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Locker'
+        '404':
+          description: Locker not found
+
+    get:
+      tags:
+        - Lockers
+      summary: Get locker by LockerId.
+      description: Get locker details by LockerId.
+      operationId: getLockerByLockerID
+      parameters:
+        - name: id
+          in: path
+          description: ID of locker to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Locker details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Locker'
+        '404':
+          description: Locker not found
+
+    delete:
+      tags:
+        - Lockers
+      summary: Delete a locker from the library by LockerId.
+      description: Delete a locker from the library.
+      operationId: deleteLocker
+      parameters:
+        - name: id
+          in: path
+          description: ID of locker to delete
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Delete an existing locker from the library
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Locker'
+        required: true
+      responses:
+        '200':
+          description: Locker with lockerID has been deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Locker'
+        '404':
+          description: Locker not found
+
+  /feedback:
+    post:
+      tags:
+        - Feedback
+      summary: Submit user feedback.
+      description: Submit feedback or support requests from users.
+      operationId: createNewFeedback
+      requestBody:
+        description: User feedback submission
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+        required: true
+      responses:
+        '201':
+          description: Create new feedback with email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+    
+    get:
+      tags:
+        - Feedback
+      summary: Get all user feedback
+      description: Retrieve a list of all user feedback submissions
+      operationId: getAllFeedback
+      responses:
+        '200':
+          description: List of feedback returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feedback'
+    
+  /feedback/{email}: 
+    get:
+      tags:
+        - Feedback
+      summary: Get feedback by user email.
+      description: Get feedback submissions by user email.
+      operationId: getFeedbackByEmail
+      parameters:
+        - name: email
+          in: path
+          description: Email of user to return feedback
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Feedback details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feedback'
+        '404':
+          description: Feedback with email not found
+    
+  
+components:
+  schemas:
+    Room:
+      properties:
+        roomId:
+          type: integer
+          example: 101
+        type:
+          type: string
+          example: "Standard"
+        floorId:
+          type: string
+          example: "1"
+      required:
+        - roomId
+        - type
+        - floorId
+    
+    Table:
+      properties:
+        tableId:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: "Single"
+        roomId:
+          type: integer
+          example: 101
+        availability:
+          type: boolean
+          example: true
+      required:
+        - tableId
+        - type
+        - roomId
+        - availability
+    
+    Locker:
+      properties:
+        lockerId:
+          type: integer
+          example: 1
+        availability:
+          type: boolean
+          example: true
+      required:
+        - lockerId
+        - availability
+
+    Feedback:
+      properties:
+        feedbackId:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        message:
+          type: string
+          example: "Great service!"
+      required:
+        - feedbackId
+        - userId
+        - message

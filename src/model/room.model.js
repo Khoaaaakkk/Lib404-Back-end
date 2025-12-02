@@ -1,11 +1,10 @@
 import mongoose from 'mongoose'
 
 const RoomSchema = mongoose.Schema({
-  roomID: {
+  roomId: {
     type: Number,
     required: true,
     unique: true,
-    trim: true
   },
 
   type: {
@@ -14,9 +13,8 @@ const RoomSchema = mongoose.Schema({
     required: true
   },
 
-  floorID: {
+  floorId: {
     type: String,
-    ref: 'Floor',
     required: true
   }
 })
