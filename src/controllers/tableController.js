@@ -156,7 +156,7 @@ const importTables = async (req, res) => {
       Table.create({
         tableId: id,
         type: id <= 133 ? 'single' : 'group',
-        roomId: 103,
+        roomId: 201,
         availability: true
       })
     }
@@ -166,7 +166,7 @@ const importTables = async (req, res) => {
       Table.create({
         tableId: id,
         type: 'group', // vì >133
-        roomId: 104,
+        roomId: 202,
         availability: true
       })
     }
