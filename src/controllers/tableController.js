@@ -1,5 +1,6 @@
 import Table from '../model/table.model.js'
 import { logEvents } from '../middleware/logEvents.js'
+import { log } from 'console'
 
 // Get all tables
 const getAllTables = async (req, res) => {
@@ -85,25 +86,78 @@ const updateTable = async (req, res) => {
 //Clear table assignment
 const clearTable = async (req, res) => {
   const { id } = req.params
+  const {username,pin} = req.body
+  const authHeader = req.headers['authorization']
 
+  //find table by tableId
   const table = await Table.findOne({ tableId: id })
-
   if (!table) {
     res.status(404).json({ message: 'Table not found' })
     logEvents(`Table with tableID ${id} not found for clearing`)
     return
   }
 
-  if (table.availability === false) {
+  //check availability
+  if (table.availability === true) {
+    res.status(400).json({ message: 'Table is already available' })
+    logEvents(`Table with tableID ${id} is already available`)
+    return
+  }
+
+  //if table has been asigned for 1 hour, auto clear
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+  if (table.date < oneHourAgo) {
     table.username = null
     table.availability = true
     await table.save()
-    res.json(table)
-    logEvents(`Table with tableID ${id} has been cleared and is now available`)
+    res.json({ message: `Table with tableID ${id} has been auto-cleared after 1 hour` })
+    logEvents(`Table with tableID ${id} has been auto-cleared after 1 hour`)
+    return
   }
 
-  logEvents(`Table with tableID ${id} is already available`)
-  return res.status(400).json({ message: 'Table is already available' })
+  //if has access token -> justify by JWT
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1]
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+
+    if (decoded.username !== table.username) {
+      logEvents(`Unauthorized clear attempt on tableID ${id} by user ${decoded.username}`)
+      return res.status(403).json({ message: 'Forbidden: You can only clear your own table assignments' })
+    }
+
+    //clear by token
+    table.username = null
+    table.availability = true
+    await table.save()
+    res.json({ message: `Table with tableID ${id} has been cleared by user ${decoded.username}` })
+    logEvents(`Table with tableID ${id} has been cleared by user ${decoded.username} using access token`)
+    return
+  }
+
+  //if no token -> require username and pin
+  if (!username || !pin) {
+    res.status(400).json({ message: 'Username and pin are required to clear table' })
+    logEvents(`No username or pin provided to clear table with tableID ${id}`)
+    return
+  }
+
+  if (username !== table.username) {
+    logEvents(`Clear failed: username mismatch for table ${id}`)
+    return res.status(403).json({ message: 'Username mismatch' })
+  }
+
+  const pinMatch = await bcrypt.compare(pin, table.hashedPin)
+  if (!pinMatch) {
+    logEvents(`Clear failed: incorrect pin for table ${id}`)
+    return res.status(403).json({ message: 'Incorrect pin' })
+  }
+
+  //clear by pin
+  table.username = null
+  table.availability = true
+  await table.save()
+  res.json({ message: `Table with tableID ${id} has been cleared by user ${username}` })
+  logEvents(`Table with tableID ${id} has been cleared by user ${username} using pin`)
 }
 
 // Delete a table
