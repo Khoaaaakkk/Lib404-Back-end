@@ -228,47 +228,6 @@ paths:
         '500':
           description: Internal server error
 
-  /tables/room/{roomId}:
-    get:
-      tags:
-        - Tables
-      summary: Get tables by RoomId
-      description: Get table details by RoomId, including tableId, availability, and date.
-      operationId: getTablesByRoomID
-      parameters:
-        - name: roomId
-          in: path
-          required: true
-          description: Room ID to return tables for
-          schema:
-            type: string
-            example: "101"
-      responses:
-        '200':
-          description: Returned tables with roomID
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Table'
-              examples:
-                example-1:
-                  summary: Example tables response
-                  value:
-                    - tableId: "1"
-                      roomId: "101"
-                      availability: true
-                      date: "2025-12-02"
-                    - tableId: "2"
-                      roomId: "101"
-                      availability: false
-                      date: "2025-12-02"
-        '404':
-          description: Tables not found
-        '500':
-          description: Internal server error
-
   /tables/{id}:
     put:
       tags:
@@ -422,6 +381,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Locker'
+        '500':
+          description: Internal server error'
                 
     get:
       tags:
@@ -438,6 +399,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Locker'
+        '500':
+          description: Internal server error
 
   /lockers/{id}:
     put:
@@ -460,23 +423,26 @@ paths:
             schema:
               type: object
               properties:
-                availability:
-                  type: boolean
-                  example: true
-                date:
+                username:
                   type: string
-                  format: date
-                  example: "2024-06-01"
+                  description: Username to assign to the locker
+                  example: "23521677"
         required: true
       responses:
         '200':
-          description: Locker with lockerID has been updated
+          description: Locker updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Locker'
-        '404':
-          description: Locker not found
+              example:
+                lockerId: 1
+                availability: false
+                username: "23521677"
+        '400':
+          description: Username is required to assign locker
+        '500':
+          description: Internal server error
 
     get:
       tags:
@@ -502,6 +468,8 @@ paths:
                   $ref: '#/components/schemas/Locker'
         '404':
           description: Locker not found
+        '500':
+          description: Internal server error
 
     delete:
       tags:
@@ -528,10 +496,12 @@ paths:
           description: Locker with lockerID has been deleted
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Locker'
+              example:
+                message: "Locker deleted successfully"
         '404':
           description: Locker not found
+        '500':
+          description: Internal server error
 
   /feedback:
     post:

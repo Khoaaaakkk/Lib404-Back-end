@@ -27,23 +27,6 @@ const getTableByTableID = async (req, res) => {
   logEvents(`Returned table with tableID: ${id}`)
 }
 
-// Get a single table by roomID
-const getTableByRoomID = async (req, res) => {
-  console.log(req.params.roomId)
-
-  const { roomId } = req.params
-  const table = await Table.find({ roomId: roomId })
-
-  if (!table) {
-    res.status(404).json({ message: 'Table not found' })
-    logEvents(`Table with roomID ${roomId} not found`)
-    return
-  }
-
-  res.json(table)
-  logEvents(`Returned table with roomID: ${roomId}`)
-}
-
 // Create a new table
 const createNewTable = async (req, res) => {
   const table = await Table.create(req.body)
@@ -102,6 +85,7 @@ const updateTable = async (req, res) => {
 //Clear table assignment
 const clearTable = async (req, res) => {
   const { id } = req.params
+
   const table = await Table.findOne({ tableId: id })
 
   if (!table) {
@@ -205,7 +189,6 @@ export default {
   createNewTable,
   deleteTable,
   getTableByTableID,
-  getTableByRoomID,
   updateTable,
   clearTable,
   importTables

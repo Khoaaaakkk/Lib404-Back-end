@@ -12,8 +12,6 @@ router
 
 router.route('/import').get(tableController.importTables)
 
-router.route('/room/:roomId').get(tableController.getTableByRoomID)
-
 router
   .route('/:id')
   .delete(tableController.deleteTable)

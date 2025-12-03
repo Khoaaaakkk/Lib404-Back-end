@@ -28,6 +28,10 @@ const TableSchema = mongoose.Schema(
 
     username: {
       type: String
+    },
+
+    hashedPin: {
+      type: String
     }
   },
 
