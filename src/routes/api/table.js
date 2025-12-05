@@ -20,3 +20,4 @@ router
 
 router.route('/:id/clear').delete(tableController.clearTable) // avai = true, xoa user
 export default router
+

@@ -167,3 +167,6 @@ export default {
   deleteLocker,
   importLockers
 }
+
+//locker không có thời gian, luôn check mã pin để cancel
+//yêu cầu login

@@ -13,6 +13,7 @@ const getAllTables = async (req, res) => {
 
 // Get a single table by tableID
 const getTableByTableID = async (req, res) => {
+  //nếu expiresAt < now thì clear table luôn (avai = true, xóa user) (nên hỏi lại)
   console.log(req.params.id)
 
   const { id } = req.params
@@ -41,6 +42,9 @@ const createNewTable = async (req, res) => {
 const updateTable = async (req, res) => {
   const { id } = req.params
   const user = req.body.username
+  //thêm pin hash later, nếu pin.length =0 thì ko set pin
+  //reserved time (dạng số) (number) -> phút
+  //expiresAt -> reserved time + current time
   const table = await Table.findOne({ tableId: id })
 
   if (!table) {
@@ -88,6 +92,8 @@ const clearTable = async (req, res) => {
   const { id } = req.params
   const {username,pin} = req.body
   const authHeader = req.headers['authorization']
+  // có auth thì chạy auth không auth thì chạy pin
+  //nếu auth là admin thì ko check gì cả, clear luôn (phụ)
 
   //find table by tableId
   const table = await Table.findOne({ tableId: id })
@@ -104,16 +110,16 @@ const clearTable = async (req, res) => {
     return
   }
 
-  //if table has been asigned for 1 hour, auto clear
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
-  if (table.date < oneHourAgo) {
-    table.username = null
-    table.availability = true
-    await table.save()
-    res.json({ message: `Table with tableID ${id} has been auto-cleared after 1 hour` })
-    logEvents(`Table with tableID ${id} has been auto-cleared after 1 hour`)
-    return
-  }
+  // //if table has been asigned for 1 hour, auto clear
+  // const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+  // if (table.date < oneHourAgo) {
+  //   table.username = null
+  //   table.availability = true
+  //   await table.save()
+  //   res.json({ message: `Table with tableID ${id} has been auto-cleared after 1 hour` })
+  //   logEvents(`Table with tableID ${id} has been auto-cleared after 1 hour`)
+  //   return
+  // }
 
   //if has access token -> justify by JWT
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -135,7 +141,7 @@ const clearTable = async (req, res) => {
   }
 
   //if no token -> require username and pin
-  if (!username || !pin) {
+  if (!username) {
     res.status(400).json({ message: 'Username and pin are required to clear table' })
     logEvents(`No username or pin provided to clear table with tableID ${id}`)
     return
@@ -146,10 +152,13 @@ const clearTable = async (req, res) => {
     return res.status(403).json({ message: 'Username mismatch' })
   }
 
-  const pinMatch = await bcrypt.compare(pin, table.hashedPin)
-  if (!pinMatch) {
+  //check now - createdAt, nếu < 5p thì bỏ qua điều kiện dùng pin để check 
+  if (table.createdAt) {
+    const pinMatch = await bcrypt.compare(pin, table.hashedPin)
+    if (!pinMatch) {
     logEvents(`Clear failed: incorrect pin for table ${id}`)
     return res.status(403).json({ message: 'Incorrect pin' })
+    }
   }
 
   //clear by pin
