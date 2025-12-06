@@ -36,7 +36,11 @@ const TableSchema = mongoose.Schema(
 
     expiresAt: {
       type: Date,
-      required:true
+      default: null
+    },
+
+    reservedTime: {
+      type: Number
     }
   },
 

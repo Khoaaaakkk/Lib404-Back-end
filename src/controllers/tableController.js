@@ -1,6 +1,7 @@
 import Table from '../model/table.model.js'
 import { logEvents } from '../middleware/logEvents.js'
 import { log } from 'console'
+import bcrypt from 'bcrypt'
 
 // Get all tables
 const getAllTables = async (req, res) => {
@@ -41,35 +42,49 @@ const createNewTable = async (req, res) => {
 // Update an existing table
 const updateTable = async (req, res) => {
   const { id } = req.params
-  const user = req.body.username
+  const {username, pin, reservedTime} = req.body
   //thêm pin hash later, nếu pin.length =0 thì ko set pin
   //reserved time (dạng số) (number) -> phút
   //expiresAt -> reserved time + current time
-  const table = await Table.findOne({ tableId: id })
 
-  if (!table) {
-    res.status(404).json({ message: 'Table not found' })
+  const table = await Table.findOne({ tableId: id }).select('-hashedPin')
+
+
+   if (!table) {
     logEvents(`Table with tableID ${id} not found for update`)
-    return
+    return res.status(404).json({ message: 'Table not found' })
   }
 
-  if (!user) {
-    res.status(400).json({ message: 'Username is required to update table' })
+  if (!username) {
     logEvents(`No username provided to update table with tableID ${id}`)
-    return
+    return res.status(400).json({ message: 'Username is required' })
   }
 
   if (table.availability === true) {
-    table.username = user
+    table.username = username
     table.availability = false
+
+    //pin processing
+    if (pin && pin.length > 0) {
+      const hashedPin = await bcrypt.hash(pin, 10)
+      table.hashedPin = hashedPin
+    }
+
+    //reserved time processing
+    if (reservedTime && Number(reservedTime) > 0) {
+      const now = new Date()
+      const expires = new Date(now.getTime() + Number(reservedTime) * 60000) // convert minutes to ms
+      table.expiresAt = expires
+    }
+
     await table.save()
-    res.json(table)
-    logEvents(`Table with tableID ${id} has been assigned to user ${user}`)
-  } else {
-    logEvents(`Table with tableID ${id} is not available for user ${user}`)
-    res.status(400).json({ message: 'Table is not available' })
-    return
+
+    logEvents(`Table with tableID ${id} has been assigned to user ${username}`)
+    return res.json(table)
   }
+
+  logEvents(`Table with tableID ${id} is not available for user ${username}`)
+  return res.status(400).json({ message: 'Table is not available' })
   // // Update the table fields
   // await table.updateOne({
   //   tableID: req.body.tableId ? req.body.tableId : table.tableId,
@@ -84,7 +99,6 @@ const updateTable = async (req, res) => {
   // // Fetch the updated table
   // const updatedTable = await Table.findOne({ tableId: id })
   // res.json(updatedTable)
-  logEvents(`Table with tableID ${id} has been updated`)
 }
 
 //Clear table assignment
@@ -97,6 +111,11 @@ const clearTable = async (req, res) => {
 
   //find table by tableId
   const table = await Table.findOne({ tableId: id })
+
+  const now = new Date()
+  const updatedAt = new Date(table.updatedAt)
+  const diffMinutes = (now - updatedAt) / 60000
+
   if (!table) {
     res.status(404).json({ message: 'Table not found' })
     logEvents(`Table with tableID ${id} not found for clearing`)
@@ -126,21 +145,21 @@ const clearTable = async (req, res) => {
     const token = authHeader.split(' ')[1]
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
-    if (decoded.username !== table.username) {
-      logEvents(`Unauthorized clear attempt on tableID ${id} by user ${decoded.username}`)
-      return res.status(403).json({ message: 'Forbidden: You can only clear your own table assignments' })
+    if (decoded.role === 'admin') {
+      //clear by admin
+      table.username = null
+      table.availability = true
+      table.hashedPin = null
+      table.expiresAt = now
+      await table.save()
+      res.json({ message: `Table with tableID ${id} has been cleared by admin` })
+      logEvents(`Table with tableID ${id} has been cleared by admin ${decoded.username}`)
+      return
     }
 
-    //clear by token
-    table.username = null
-    table.availability = true
-    await table.save()
-    res.json({ message: `Table with tableID ${id} has been cleared by user ${decoded.username}` })
-    logEvents(`Table with tableID ${id} has been cleared by user ${decoded.username} using access token`)
-    return
   }
 
-  //if no token -> require username and pin
+  //if no username -> require username and pin
   if (!username) {
     res.status(400).json({ message: 'Username and pin are required to clear table' })
     logEvents(`No username or pin provided to clear table with tableID ${id}`)
@@ -152,18 +171,29 @@ const clearTable = async (req, res) => {
     return res.status(403).json({ message: 'Username mismatch' })
   }
 
-  //check now - createdAt, nếu < 5p thì bỏ qua điều kiện dùng pin để check 
-  if (table.createdAt) {
-    const pinMatch = await bcrypt.compare(pin, table.hashedPin)
+  if (diffMinutes < 0.5) {
+    //check the pin only if table was created more than 5 minutes ago
+    if (!pin) {
+      logEvents(`Clear failed: no pin provided for table ${id}`)
+      return res.status(400).json({ message: 'Pin is required to clear table in first 5 minutes' })
+    }
+
+    if (!table.pin) {
+      return res.status(400).json({ message: 'This table has no pin set' })
+    }
+
+    const pinMatch = await bcrypt.compare(pin, table.pin)
     if (!pinMatch) {
-    logEvents(`Clear failed: incorrect pin for table ${id}`)
-    return res.status(403).json({ message: 'Incorrect pin' })
+      logEvents(`Clear failed: incorrect pin for table ${id}`)
+      return res.status(403).json({ message: 'Incorrect pin' })
     }
   }
 
   //clear by pin
   table.username = null
   table.availability = true
+  table.pin = null
+  table.expiresAt = now
   await table.save()
   res.json({ message: `Table with tableID ${id} has been cleared by user ${username}` })
   logEvents(`Table with tableID ${id} has been cleared by user ${username} using pin`)
@@ -233,6 +263,8 @@ const importTables = async (req, res) => {
         availability: true
       })
     }
+
+    const inserted = await Table.find({})
 
     res.status(200).json({
       message: 'Tables imported successfully',
