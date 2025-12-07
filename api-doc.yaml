@@ -162,23 +162,39 @@ paths:
     post:
       tags:
         - Tables
-      summary: Add a new table to the library.
-      description: Add a new table to the library.
+      summary: Create a new table
+      description: Create a new table with tableId, type, roomId, and optional reservedTime.
       operationId: createNewTable
       requestBody:
-        description: Add a new table to the library
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Table'
-        required: true
+              type: object
+              properties:
+                tableId:
+                  type: integer
+                type:
+                  type: string
+                  enum: [single, group]
+                roomId:
+                  type: integer
+                reservedTime:
+                  type: integer
+                  nullable: true
+              required:
+                - tableId
+                - type
+                - roomId
       responses:
-        '200':
-          description: New table created
+        '201':
+          description: Table created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Table'
+        '400':
+          description: Invalid request body
         '500':
           description: Internal server error
 
@@ -186,11 +202,11 @@ paths:
       tags:
         - Tables
       summary: Get all tables
-      description: Retrieve a list of all tables in the library
+      description: Retrieve all tables
       operationId: getAllTables
       responses:
         '200':
-          description: Returned table list
+          description: List of all tables
           content:
             application/json:
               schema:
@@ -201,21 +217,12 @@ paths:
           description: Internal server error
 
   /tables/import:
-    post:
+    get:
       tags:
         - Tables
-      summary: Import multiple tables to the library.
-      description: Import multiple tables to the library.
+      summary: Import multiple tables into database
+      description: Import a predefined set of tables
       operationId: importTables
-      requestBody:
-        description: Import multiple tables to the library
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Table'
-        required: true
       responses:
         '200':
           description: Tables imported successfully
@@ -229,21 +236,45 @@ paths:
           description: Internal server error
 
   /tables/{id}:
+    get:
+      tags:
+        - Tables
+      summary: Get table by tableId
+      description: Retrieve a table using its tableId
+      operationId: getTableByTableID
+      parameters:
+        - name: id
+          in: path
+          description: tableId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Table data returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '404':
+          description: Table not found
+        '500':
+          description: Internal server error
+
     put:
       tags:
-      - Tables
-      summary: Update table availability and assign a username
-      description: Update a table's availability status and assign it to a user
+        - Tables
+      summary: Update table information
+      description: Update table username, pin, availability, and reservedTime
       operationId: updateTable
       parameters:
-      - name: id
-        in: path
-        description: ID of the table to update
-        required: true
-        schema:
-          type: string
+        - name: id
+          in: path
+          description: tableId
+          required: true
+          schema:
+            type: integer
       requestBody:
-        description: Update an existing table
         required: true
         content:
           application/json:
@@ -252,8 +283,12 @@ paths:
               properties:
                 username:
                   type: string
-                  description: Username to assign to the table
-                  example: "23521677"
+                pin:
+                  type: string
+                  nullable: true
+                reservedTime:
+                  type: integer
+                  nullable: true
       responses:
         '200':
           description: Table updated successfully
@@ -261,42 +296,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Table'
-              example:
-                tableId: 1
-                type: "Single"
-                roomId: 101
-                availability: false
-                username: "23521677"
         '400':
-          description: Bad request (missing username or table not available)
-        '404':
-          description: Table not found
-        '500':
-          description: Internal server error
-
-
-    get:
-      tags:
-        - Tables
-      summary: Get table by TableId.
-      description: Get table details by TableId.
-      operationId: getTableByTableID
-      parameters:
-        - name: id
-          in: path
-          description: ID of table to return
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Returned table with tableID
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Table'
+          description: Invalid parameters
         '404':
           description: Table not found
         '500':
@@ -305,26 +306,19 @@ paths:
     delete:
       tags:
         - Tables
-      summary: Delete a table from the library by TableId.
-      description: Delete a table from the library.
+      summary: Delete table by tableId
+      description: Delete a table from database
       operationId: deleteTable
       parameters:
         - name: id
           in: path
-          description: ID of table to delete
+          description: tableId
           required: true
           schema:
-            type: string
-      requestBody:
-        description: Delete an existing table from the library
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Table'
-        required: true
+            type: integer
       responses:
         '200':
-          description: Table with tableID has been deleted
+          description: Table deleted successfully
           content:
             application/json:
               example:
@@ -333,47 +327,60 @@ paths:
           description: Table not found
         '500':
           description: Internal server error
-          
+
   /tables/{id}/clear:
-    get:
-        tags:
-          - Tables
-        summary: Clear table reservation by TableId.
-        description: Clear table reservation by TableId.
-        operationId: clearTableReservation
-        parameters:
-          - name: id
-            in: path
-            description: ID of table to clear reservation
-            required: true
+    put:
+      tags:
+        - Tables
+      summary: Clear table reservation (reset username, availability, pin)
+      description: Reset table to available state
+      operationId: clearTable
+      parameters:
+        - name: id
+          in: path
+          description: tableId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
             schema:
-              type: string
-        responses:
-          '200':
-            description: Table reservation cleared successfully
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Table'
-          '404':
-            description: Table not found
-          '500':
-            description: Internal server error
+              type: object
+              properties:
+                username:
+                  type: string
+                  nullable: true
+                pin:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Table cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '404':
+          description: Table not found
+        '500':
+          description: Internal server error
 
   /lockers:
     post:
       tags:
-        - Lockers
-      summary: Add a new locker to the library.
-      description: Add a new locker to the library.
+      - Lockers
+      summary: Create a new locker.
+      description: Add a new locker to the system.
       operationId: createNewLocker
       requestBody:
-        description: Add a new locker to the library
+        description: Locker information to be created.
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Locker'
-        required: true
       responses:
         '200':
           description: Locker added successfully
@@ -382,13 +389,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Locker'
         '500':
-          description: Internal server error'
-                
+          description: Internal server error
+
     get:
       tags:
-        - Lockers
-      summary: Get all lockers
-      description: Retrieve a list of all lockers in the library
+      - Lockers
+      summary: Get all lockers.
+      description: Retrieve a list of all lockers.
       operationId: getAllLockers
       responses:
         '200':
@@ -398,26 +405,75 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Locker'
+                $ref: '#/components/schemas/Locker'
         '500':
           description: Internal server error
 
+
+  /lockers/import:
+    get:
+      tags:
+      - Lockers
+      summary: Import locker data.
+      description: Import predefined lockers (1–136) into the system.
+      operationId: importLockers
+      responses:
+        '200':
+          description: Lockers imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Lockers imported successfully"
+        '500':
+          description: Internal server error
+
+
   /lockers/{id}:
+    get:
+      tags:
+      - Lockers
+      summary: Get locker by LockerId.
+      description: Get locker details by LockerId.
+      operationId: getLockerByID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Locker ID
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Locker details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Locker'
+        '404':
+          description: Locker not found
+        '500':
+          description: Internal server error
+
     put:
       tags:
-        - Lockers
-      summary: Update locker availability status by LockerId.
-      description: Update the availability status of a locker by LockerId.
+      - Lockers
+      summary: Assign locker to a user.
+      description: Update locker availability and assign username (only if locker is available).
       operationId: updateLocker
       parameters:
-        - name: id
-          in: path
-          description: ID of locker to update availability
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        description: Locker ID
+        schema:
+          type: string
       requestBody:
-        description: Update locker availability status
+        description: Username to assign.
+        required: true
         content:
           application/json:
             schema:
@@ -425,9 +481,7 @@ paths:
               properties:
                 username:
                   type: string
-                  description: Username to assign to the locker
                   example: "23521677"
-        required: true
       responses:
         '200':
           description: Locker updated successfully
@@ -435,37 +489,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Locker'
-              example:
-                lockerId: 1
-                availability: false
-                username: "23521677"
         '400':
-          description: Username is required to assign locker
-        '500':
-          description: Internal server error
-
-    get:
-      tags:
-        - Lockers
-      summary: Get locker by LockerId.
-      description: Get locker details by LockerId.
-      operationId: getLockerByLockerID
-      parameters:
-        - name: id
-          in: path
-          description: ID of locker to return
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Locker details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Locker'
+          description: Username missing or locker not available
         '404':
           description: Locker not found
         '500':
@@ -473,27 +498,27 @@ paths:
 
     delete:
       tags:
-        - Lockers
-      summary: Delete a locker from the library by LockerId.
-      description: Delete a locker from the library.
+      - Lockers
+      summary: Delete a locker by LockerId.
+      description: Remove a locker from the system.
       operationId: deleteLocker
       parameters:
-        - name: id
-          in: path
-          description: ID of locker to delete
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        description: Locker ID
+        schema:
+          type: string
       requestBody:
-        description: Delete an existing locker from the library
+        description: Locker delete request (not required but kept for consistency)
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Locker'
-        required: true
       responses:
         '200':
-          description: Locker with lockerID has been deleted
+          description: Locker deleted successfully
           content:
             application/json:
               example:
@@ -502,6 +527,52 @@ paths:
           description: Locker not found
         '500':
           description: Internal server error
+
+
+  /lockers/{id}/clear:
+    put:
+      tags:
+      - Lockers
+      summary: Clear locker reservation.
+      description: Clear locker (set available = true), remove username, and verify PIN.
+      operationId: clearLocker
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Locker ID
+        schema:
+          type: string
+      requestBody:
+        description: Username and PIN required to clear locker.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "23521677"
+                pin:
+                  type: string
+                  example: "1234"
+      responses:
+        '200':
+          description: Locker cleared successfully
+          content:
+            application/json:
+              example:
+                message: "Locker 5 cleared successfully"
+        '400':
+          description: Missing PIN or locker already available
+        '403':
+          description: Username mismatch or incorrect PIN
+        '404':
+          description: Locker not found
+        '500':
+          description: Internal server error
+
 
   /feedback:
     post:
@@ -587,30 +658,41 @@ components:
         - floorId
     
     Table:
+      type: object
       properties:
+        _id:
+          type: string
         tableId:
           type: integer
-          example: 1
         type:
           type: string
-          example: "Single"
+          enum: [single, group]
         roomId:
           type: integer
-          example: 101
         availability:
           type: boolean
-          example: true
         username:
           type: string
-          example: "23521677"
-      required:
-        - tableId
-        - type
-        - roomId
-        - availability
-        - username
+          nullable: true
+        hashedPin:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        reservedTime:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     
     Locker:
+      type: object
       properties:
         lockerId:
           type: integer
@@ -620,11 +702,12 @@ components:
           example: true
         username:
           type: string
+          nullable: true
           example: "23521677"
       required:
-        - lockerId
-        - availability
-        - username
+          - lockerId
+          - availability
+
 
     Feedback:
       properties:
