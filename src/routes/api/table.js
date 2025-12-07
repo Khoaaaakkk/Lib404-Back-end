@@ -18,6 +18,6 @@ router
   .get(tableController.getTableByTableID)
   .put(tableController.updateTable)
 
-router.route('/:id/clear').delete(tableController.clearTable) // avai = true, xoa user
+router.route('/:id/clear').put(tableController.clearTable) // avai = true, xoa user
 export default router
 
