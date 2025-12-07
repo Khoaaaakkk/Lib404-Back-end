@@ -89,30 +89,56 @@ const updateLocker = async (req, res) => {
 const clearLocker = async (req, res) => {
   try {
     const { id } = req.params
+    const { username, pin } = req.body
 
     const locker = await Locker.findOne({ lockerId: id })
 
     if (!locker) {
-      res.status(404).json({ message: 'Locker not found' })
       logEvents(`Locker with lockerID ${id} not found for clearing`)
-      return
+      return res.status(404).json({ message: 'Locker not found' })
     }
 
-    if (locker.availability === false) {
-      locker.username = null
-      locker.availability = true
-      await locker.save()
-      logEvents(`Locker with lockerID ${id} cleared`)
-      return res.json(locker)
+    if (locker.availability === true) {
+      logEvents(`Locker with lockerID ${id} is already available`)
+      return res.status(400).json({ message: 'Locker is already available' })
     }
 
-    logEvents(`Locker with lockerID ${id} is already available`)
-    return res.status(400).json({ message: 'Locker is already available' })
+    // ✅ Check username
+    if (!username || username !== locker.username) {
+      logEvents(`Clear failed: username mismatch for locker ${id}`)
+      return res.status(403).json({ message: 'Username mismatch' })
+    }
+
+    // ✅ Check pin
+    if (!pin) {
+      logEvents(`Clear failed: no pin provided for locker ${id}`)
+      return res.status(400).json({ message: 'Pin is required to clear locker' })
+    }
+
+    if (!locker.hashedPin) {
+      return res.status(400).json({ message: 'This locker has no pin set' })
+    }
+
+    const pinMatch = await bcrypt.compare(pin, locker.hashedPin)
+    if (!pinMatch) {
+      logEvents(`Clear failed: incorrect pin for locker ${id}`)
+      return res.status(403).json({ message: 'Incorrect pin' })
+    }
+
+    // ✅ Clear locker
+    locker.username = null
+    locker.availability = true
+    locker.hashedPin = null
+    await locker.save()
+
+    logEvents(`Locker with lockerID ${id} cleared by user ${username} using pin`)
+    return res.json({ message: `Locker ${id} cleared successfully` })
   } catch (error) {
     logEvents(`Error clearing locker: ${error.message}`)
-    res.status(500).json({ message: 'Server error', error: error.message })
+    return res.status(500).json({ message: 'Server error', error: error.message })
   }
 }
+
 
 // Delete a locker
 const deleteLocker = async (req, res) => {
@@ -167,3 +193,6 @@ export default {
   deleteLocker,
   importLockers
 }
+
+//locker không có thời gian, luôn check mã pin để cancel
+//yêu cầu login

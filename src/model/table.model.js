@@ -28,6 +28,19 @@ const TableSchema = mongoose.Schema(
 
     username: {
       type: String
+    },
+
+    hashedPin: {
+      type: String
+    },
+
+    expiresAt: {
+      type: Date,
+      default: null
+    },
+
+    reservedTime: {
+      type: Number
     }
   },
 

@@ -1,5 +1,7 @@
 import Table from '../model/table.model.js'
 import { logEvents } from '../middleware/logEvents.js'
+import { log } from 'console'
+import bcrypt from 'bcrypt'
 
 // Get all tables
 const getAllTables = async (req, res) => {
@@ -12,6 +14,7 @@ const getAllTables = async (req, res) => {
 
 // Get a single table by tableID
 const getTableByTableID = async (req, res) => {
+  //nếu expiresAt < now thì clear table luôn (avai = true, xóa user) (nên hỏi lại)
   console.log(req.params.id)
 
   const { id } = req.params
@@ -27,23 +30,6 @@ const getTableByTableID = async (req, res) => {
   logEvents(`Returned table with tableID: ${id}`)
 }
 
-// Get a single table by roomID
-const getTableByRoomID = async (req, res) => {
-  console.log(req.params.roomId)
-
-  const { roomId } = req.params
-  const table = await Table.find({ roomId: roomId })
-
-  if (!table) {
-    res.status(404).json({ message: 'Table not found' })
-    logEvents(`Table with roomID ${roomId} not found`)
-    return
-  }
-
-  res.json(table)
-  logEvents(`Returned table with roomID: ${roomId}`)
-}
-
 // Create a new table
 const createNewTable = async (req, res) => {
   const table = await Table.create(req.body)
@@ -56,32 +42,49 @@ const createNewTable = async (req, res) => {
 // Update an existing table
 const updateTable = async (req, res) => {
   const { id } = req.params
-  const user = req.body.username
-  const table = await Table.findOne({ tableId: id })
+  const {username, pin, reservedTime} = req.body
+  //thêm pin hash later, nếu pin.length =0 thì ko set pin
+  //reserved time (dạng số) (number) -> phút
+  //expiresAt -> reserved time + current time
 
-  if (!table) {
-    res.status(404).json({ message: 'Table not found' })
+  const table = await Table.findOne({ tableId: id }).select('-hashedPin')
+
+
+   if (!table) {
     logEvents(`Table with tableID ${id} not found for update`)
-    return
+    return res.status(404).json({ message: 'Table not found' })
   }
 
-  if (!user) {
-    res.status(400).json({ message: 'Username is required to update table' })
+  if (!username) {
     logEvents(`No username provided to update table with tableID ${id}`)
-    return
+    return res.status(400).json({ message: 'Username is required' })
   }
 
   if (table.availability === true) {
-    table.username = user
+    table.username = username
     table.availability = false
+
+    //pin processing
+    if (pin && pin.length > 0) {
+      const hashedPin = await bcrypt.hash(pin, 10)
+      table.hashedPin = hashedPin
+    }
+
+    //reserved time processing
+    if (reservedTime && Number(reservedTime) > 0) {
+      const now = new Date()
+      const expires = new Date(now.getTime() + Number(reservedTime) * 60000) // convert minutes to ms
+      table.expiresAt = expires
+    }
+
     await table.save()
-    res.json(table)
-    logEvents(`Table with tableID ${id} has been assigned to user ${user}`)
-  } else {
-    logEvents(`Table with tableID ${id} is not available for user ${user}`)
-    res.status(400).json({ message: 'Table is not available' })
-    return
+
+    logEvents(`Table with tableID ${id} has been assigned to user ${username}`)
+    return res.json(table)
   }
+
+  logEvents(`Table with tableID ${id} is not available for user ${username}`)
+  return res.status(400).json({ message: 'Table is not available' })
   // // Update the table fields
   // await table.updateOne({
   //   tableID: req.body.tableId ? req.body.tableId : table.tableId,
@@ -96,13 +99,22 @@ const updateTable = async (req, res) => {
   // // Fetch the updated table
   // const updatedTable = await Table.findOne({ tableId: id })
   // res.json(updatedTable)
-  logEvents(`Table with tableID ${id} has been updated`)
 }
 
 //Clear table assignment
 const clearTable = async (req, res) => {
   const { id } = req.params
+  const {username,pin} = req.body
+  const authHeader = req.headers['authorization']
+  // có auth thì chạy auth không auth thì chạy pin
+  //nếu auth là admin thì ko check gì cả, clear luôn (phụ)
+
+  //find table by tableId
   const table = await Table.findOne({ tableId: id })
+
+  const now = new Date()
+  const updatedAt = new Date(table.updatedAt)
+  const diffMinutes = (now - updatedAt) / 60000
 
   if (!table) {
     res.status(404).json({ message: 'Table not found' })
@@ -110,16 +122,81 @@ const clearTable = async (req, res) => {
     return
   }
 
-  if (table.availability === false) {
-    table.username = null
-    table.availability = true
-    await table.save()
-    res.json(table)
-    logEvents(`Table with tableID ${id} has been cleared and is now available`)
+  //check availability
+  if (table.availability === true) {
+    res.status(400).json({ message: 'Table is already available' })
+    logEvents(`Table with tableID ${id} is already available`)
+    return
   }
 
-  logEvents(`Table with tableID ${id} is already available`)
-  return res.status(400).json({ message: 'Table is already available' })
+  // //if table has been asigned for 1 hour, auto clear
+  // const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
+  // if (table.date < oneHourAgo) {
+  //   table.username = null
+  //   table.availability = true
+  //   await table.save()
+  //   res.json({ message: `Table with tableID ${id} has been auto-cleared after 1 hour` })
+  //   logEvents(`Table with tableID ${id} has been auto-cleared after 1 hour`)
+  //   return
+  // }
+
+  //if has access token -> justify by JWT
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1]
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+
+    if (decoded.role === 'admin') {
+      //clear by admin
+      table.username = null
+      table.availability = true
+      table.hashedPin = null
+      table.expiresAt = now
+      await table.save()
+      res.json({ message: `Table with tableID ${id} has been cleared by admin` })
+      logEvents(`Table with tableID ${id} has been cleared by admin ${decoded.username}`)
+      return
+    }
+
+  }
+
+  //if no username -> require username and pin
+  if (!username) {
+    res.status(400).json({ message: 'Username and pin are required to clear table' })
+    logEvents(`No username or pin provided to clear table with tableID ${id}`)
+    return
+  }
+
+  if (username !== table.username) {
+    logEvents(`Clear failed: username mismatch for table ${id}`)
+    return res.status(403).json({ message: 'Username mismatch' })
+  }
+
+  if (diffMinutes < 0.5) {
+    //check the pin only if table was created more than 5 minutes ago
+    if (!pin) {
+      logEvents(`Clear failed: no pin provided for table ${id}`)
+      return res.status(400).json({ message: 'Pin is required to clear table in first 5 minutes' })
+    }
+
+    if (!table.pin) {
+      return res.status(400).json({ message: 'This table has no pin set' })
+    }
+
+    const pinMatch = await bcrypt.compare(pin, table.pin)
+    if (!pinMatch) {
+      logEvents(`Clear failed: incorrect pin for table ${id}`)
+      return res.status(403).json({ message: 'Incorrect pin' })
+    }
+  }
+
+  //clear by pin
+  table.username = null
+  table.availability = true
+  table.pin = null
+  table.expiresAt = now
+  await table.save()
+  res.json({ message: `Table with tableID ${id} has been cleared by user ${username}` })
+  logEvents(`Table with tableID ${id} has been cleared by user ${username} using pin`)
 }
 
 // Delete a table
@@ -172,7 +249,7 @@ const importTables = async (req, res) => {
       Table.create({
         tableId: id,
         type: id <= 133 ? 'single' : 'group',
-        roomId: 103,
+        roomId: 201,
         availability: true
       })
     }
@@ -182,10 +259,12 @@ const importTables = async (req, res) => {
       Table.create({
         tableId: id,
         type: 'group', // vì >133
-        roomId: 104,
+        roomId: 202,
         availability: true
       })
     }
+
+    const inserted = await Table.find({})
 
     res.status(200).json({
       message: 'Tables imported successfully',
@@ -205,7 +284,6 @@ export default {
   createNewTable,
   deleteTable,
   getTableByTableID,
-  getTableByRoomID,
   updateTable,
   clearTable,
   importTables
