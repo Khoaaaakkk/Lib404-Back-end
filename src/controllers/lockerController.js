@@ -87,7 +87,7 @@ const updateLocker = async (req, res) => {
 
       logEvents(`Locker ${id} assigned to ${username} with hashed PIN`)
     } else {
-      res.status(402).json({ message: 'Locker is not available' })
+      res.status(409).json({ message: 'Locker is not available' })
       logEvents(`Locker ${id} is not available for ${username}`)
     }
   } catch (error) {
@@ -113,7 +113,7 @@ const clearLocker = async (req, res) => {
   // check availability
   if (locker.availability === true) {
     logEvents(`Locker with lockerID ${id} is already available`)
-    return res.status(400).json({ message: 'Locker is already available' })
+    return res.status(408).json({ message: 'Locker is already available' })
   }
 
   // role = admin -> clear vô điều kiện
