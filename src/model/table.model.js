@@ -30,10 +30,6 @@ const TableSchema = mongoose.Schema(
       type: String
     },
 
-    hashedPin: {
-      type: String
-    },
-
     expiresAt: {
       type: Date,
       default: null

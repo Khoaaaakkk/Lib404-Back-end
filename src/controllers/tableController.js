@@ -1,7 +1,6 @@
 import Table from '../model/table.model.js'
 import { logEvents } from '../middleware/logEvents.js'
 import { log } from 'console'
-import bcrypt from 'bcrypt'
 
 // Get all tables
 const getAllTables = async (req, res) => {
@@ -42,15 +41,14 @@ const createNewTable = async (req, res) => {
 // Update an existing table
 const updateTable = async (req, res) => {
   const { id } = req.params
-  const {username, pin, reservedTime} = req.body
+  const { username, reservedTime } = req.body
   //thêm pin hash later, nếu pin.length =0 thì ko set pin
   //reserved time (dạng số) (number) -> phút
   //expiresAt -> reserved time + current time
 
   const table = await Table.findOne({ tableId: id }).select('-hashedPin')
 
-
-   if (!table) {
+  if (!table) {
     logEvents(`Table with tableID ${id} not found for update`)
     return res.status(404).json({ message: 'Table not found' })
   }
@@ -63,12 +61,6 @@ const updateTable = async (req, res) => {
   if (table.availability === true) {
     table.username = username
     table.availability = false
-
-    //pin processing
-    if (pin && pin.length > 0) {
-      const hashedPin = await bcrypt.hash(pin, 10)
-      table.hashedPin = hashedPin
-    }
 
     //reserved time processing
     if (reservedTime && Number(reservedTime) > 0) {
@@ -104,7 +96,7 @@ const updateTable = async (req, res) => {
 //Clear table assignment
 const clearTable = async (req, res) => {
   const { id } = req.params
-  const {username,pin} = req.body
+  const { username } = req.body
   const authHeader = req.headers['authorization']
   // có auth thì chạy auth không auth thì chạy pin
   //nếu auth là admin thì ko check gì cả, clear luôn (phụ)
@@ -149,19 +141,23 @@ const clearTable = async (req, res) => {
       //clear by admin
       table.username = null
       table.availability = true
-      table.hashedPin = null
       table.expiresAt = now
       await table.save()
-      res.json({ message: `Table with tableID ${id} has been cleared by admin` })
-      logEvents(`Table with tableID ${id} has been cleared by admin ${decoded.username}`)
+      res.json({
+        message: `Table with tableID ${id} has been cleared by admin`
+      })
+      logEvents(
+        `Table with tableID ${id} has been cleared by admin ${decoded.username}`
+      )
       return
     }
-
   }
 
   //if no username -> require username and pin
   if (!username) {
-    res.status(400).json({ message: 'Username and pin are required to clear table' })
+    res
+      .status(400)
+      .json({ message: 'Username and pin are required to clear table' })
     logEvents(`No username or pin provided to clear table with tableID ${id}`)
     return
   }
@@ -171,32 +167,16 @@ const clearTable = async (req, res) => {
     return res.status(403).json({ message: 'Username mismatch' })
   }
 
-  if (diffMinutes < 0.5) {
-    //check the pin only if table was created more than 5 minutes ago
-    if (!pin) {
-      logEvents(`Clear failed: no pin provided for table ${id}`)
-      return res.status(400).json({ message: 'Pin is required to clear table in first 5 minutes' })
-    }
-
-    if (!table.pin) {
-      return res.status(400).json({ message: 'This table has no pin set' })
-    }
-
-    const pinMatch = await bcrypt.compare(pin, table.pin)
-    if (!pinMatch) {
-      logEvents(`Clear failed: incorrect pin for table ${id}`)
-      return res.status(403).json({ message: 'Incorrect pin' })
-    }
-  }
-
-  //clear by pin
   table.username = null
   table.availability = true
-  table.pin = null
   table.expiresAt = now
   await table.save()
-  res.json({ message: `Table with tableID ${id} has been cleared by user ${username}` })
-  logEvents(`Table with tableID ${id} has been cleared by user ${username} using pin`)
+  res.json({
+    message: `Table with tableID ${id} has been cleared by user ${username}`
+  })
+  logEvents(
+    `Table with tableID ${id} has been cleared by user ${username} using pin`
+  )
 }
 
 // Delete a table
