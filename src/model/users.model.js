@@ -30,6 +30,10 @@ const UserSchema = mongoose.Schema(
     },
     avatarId: {
       type: String // Cloudinary public_id for delete image
+    },
+    role: {
+      type: String,
+      default: 'user'
     }
   },
   {

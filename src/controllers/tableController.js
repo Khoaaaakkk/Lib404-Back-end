@@ -1,6 +1,6 @@
 import Table from '../model/table.model.js'
 import { logEvents } from '../middleware/logEvents.js'
-import { log } from 'console'
+import jwt from 'jsonwebtoken'
 
 // Get all tables
 const getAllTables = async (req, res) => {
@@ -42,71 +42,62 @@ const createNewTable = async (req, res) => {
 const updateTable = async (req, res) => {
   const { id } = req.params
   const { username, reservedTime } = req.body
-  //thêm pin hash later, nếu pin.length =0 thì ko set pin
-  //reserved time (dạng số) (number) -> phút
-  //expiresAt -> reserved time + current time
 
   const table = await Table.findOne({ tableId: id }).select('-hashedPin')
 
+  // check if table exists
   if (!table) {
     logEvents(`Table with tableID ${id} not found for update`)
     return res.status(404).json({ message: 'Table not found' })
   }
 
+  // validate username
   if (!username) {
     logEvents(`No username provided to update table with tableID ${id}`)
     return res.status(400).json({ message: 'Username is required' })
   }
-
-  if (table.availability === true) {
-    table.username = username
-    table.availability = false
-
-    //reserved time processing
-    if (reservedTime && Number(reservedTime) > 0) {
-      const now = new Date()
-      const expires = new Date(now.getTime() + Number(reservedTime) * 60000) // convert minutes to ms
-      table.expiresAt = expires
-    }
-
-    await table.save()
-
-    logEvents(`Table with tableID ${id} has been assigned to user ${username}`)
-    return res.json(table)
+  // validate reservedTime
+  if (
+    !reservedTime ||
+    isNaN(Number(reservedTime)) ||
+    Number(reservedTime) < 30
+  ) {
+    logEvents(
+      `Invalid reservedTime provided for table with tableID ${id} by user ${username}`
+    )
+    return res
+      .status(401)
+      .json({ message: 'Valid reservedTime (in minutes) is required' })
   }
 
-  logEvents(`Table with tableID ${id} is not available for user ${username}`)
-  return res.status(400).json({ message: 'Table is not available' })
-  // // Update the table fields
-  // await table.updateOne({
-  //   tableID: req.body.tableId ? req.body.tableId : table.tableId,
-  //   type: req.body.type ? req.body.type : table.type,
-  //   roomID: req.body.roomId ? req.body.roomId : table.roomId,
-  //   availability:
-  //     req.body.availability !== undefined
-  //       ? req.body.availability
-  //       : table.availability,
-  //   date: req.body.date ? req.body.date : table.date
-  // })
-  // // Fetch the updated table
-  // const updatedTable = await Table.findOne({ tableId: id })
-  // res.json(updatedTable)
+  // check availability
+  if (table.availability === false) {
+    logEvents(`Table with tableID ${id} is not available for user ${username}`)
+    return res.status(409).json({ message: 'Table is not available' })
+  }
+
+  //reserved time processing
+  if (reservedTime && Number(reservedTime) > 0) {
+    const now = new Date()
+    const expires = new Date(now.getTime() + Number(reservedTime) * 60000) // convert minutes to ms
+    table.expiresAt = expires
+  }
+  table.username = username
+  table.availability = false
+
+  await table.save()
+  logEvents(`Table with tableID ${id} has been assigned to user ${username}`)
+  return res.json(table)
 }
 
 //Clear table assignment
 const clearTable = async (req, res) => {
   const { id } = req.params
   const { username } = req.body
-  const authHeader = req.headers['authorization']
-  // có auth thì chạy auth không auth thì chạy pin
-  //nếu auth là admin thì ko check gì cả, clear luôn (phụ)
+  const authHeader = req.headers.authorization || req.headers.Authorization
 
   //find table by tableId
   const table = await Table.findOne({ tableId: id })
-
-  const now = new Date()
-  const updatedAt = new Date(table.updatedAt)
-  const diffMinutes = (now - updatedAt) / 60000
 
   if (!table) {
     res.status(404).json({ message: 'Table not found' })
@@ -120,63 +111,39 @@ const clearTable = async (req, res) => {
     logEvents(`Table with tableID ${id} is already available`)
     return
   }
-
-  // //if table has been asigned for 1 hour, auto clear
-  // const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
-  // if (table.date < oneHourAgo) {
-  //   table.username = null
-  //   table.availability = true
-  //   await table.save()
-  //   res.json({ message: `Table with tableID ${id} has been auto-cleared after 1 hour` })
-  //   logEvents(`Table with tableID ${id} has been auto-cleared after 1 hour`)
-  //   return
-  // }
-
-  //if has access token -> justify by JWT
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  // role = admin -> clear vô điều kiện
+  if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1]
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-
-    if (decoded.role === 'admin') {
-      //clear by admin
-      table.username = null
-      table.availability = true
-      table.expiresAt = now
-      await table.save()
-      res.json({
-        message: `Table with tableID ${id} has been cleared by admin`
-      })
-      logEvents(
-        `Table with tableID ${id} has been cleared by admin ${decoded.username}`
-      )
+    if (!token) return res.status(401).json({ message: 'Token not found' })
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
+      req.user = decoded.username
+      if (decoded.role === 'admin') {
+        logEvents(`an admin ${decoded.username} has cancel the table`)
+        logEvents(`Table with tableID ${id} has been canceled successfully`)
+      }
+    })
+  } else {
+    //if not admin, check username exists
+    if (!username) {
+      res.status(402).json({ message: 'Username required to clear table' })
+      logEvents(`No username provided to clear table with tableID ${id}`)
       return
     }
-  }
-
-  //if no username -> require username and pin
-  if (!username) {
-    res
-      .status(400)
-      .json({ message: 'Username and pin are required to clear table' })
-    logEvents(`No username or pin provided to clear table with tableID ${id}`)
-    return
-  }
-
-  if (username !== table.username) {
-    logEvents(`Clear failed: username mismatch for table ${id}`)
-    return res.status(403).json({ message: 'Username mismatch' })
+    // check username match?
+    if (username !== table.username) {
+      logEvents(`Clear failed: username mismatch for table ${id}`)
+      return res.status(403).json({ message: 'Username mismatch' })
+    }
   }
 
   table.username = null
   table.availability = true
-  table.expiresAt = now
+  table.expiresAt = new Date()
   await table.save()
-  res.json({
-    message: `Table with tableID ${id} has been cleared by user ${username}`
+  logEvents(`Table with tableID ${id} has been canceled successfully`)
+  return res.status(200).json({
+    message: `Table with tableID ${id} has been canceled successfully`
   })
-  logEvents(
-    `Table with tableID ${id} has been cleared by user ${username} using pin`
-  )
 }
 
 // Delete a table

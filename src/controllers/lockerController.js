@@ -1,6 +1,7 @@
 import Locker from '../model/locker.model.js'
 import { logEvents } from '../middleware/logEvents.js'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 // Get all lockers
 const getAllLockers = async (req, res) => {
@@ -72,7 +73,6 @@ const updateLocker = async (req, res) => {
 
     // Check if locker is available
     if (locker.availability === true) {
-      // 🔐 Hash PIN
       const hashedPin = await bcrypt.hash(pin, 10)
 
       locker.username = username
@@ -87,7 +87,7 @@ const updateLocker = async (req, res) => {
 
       logEvents(`Locker ${id} assigned to ${username} with hashed PIN`)
     } else {
-      res.status(400).json({ message: 'Locker is not available' })
+      res.status(409).json({ message: 'Locker is not available' })
       logEvents(`Locker ${id} is not available for ${username}`)
     }
   } catch (error) {
@@ -97,58 +97,68 @@ const updateLocker = async (req, res) => {
 }
 
 const clearLocker = async (req, res) => {
-  try {
-    const { id } = req.params
-    const { username, pin } = req.body
+  const { id } = req.params
+  const { username, pin } = req.body
+  const authHeader = req.headers.authorization || req.headers.Authorization
 
-    const locker = await Locker.findOne({ lockerId: id })
+  // find locker by lockerId
+  const locker = await Locker.findOne({ lockerId: id })
 
-    if (!locker) {
-      logEvents(`Locker with lockerID ${id} not found for clearing`)
-      return res.status(404).json({ message: 'Locker not found' })
+  // check if locker exists
+  if (!locker) {
+    logEvents(`Locker with lockerID ${id} not found for clearing`)
+    return res.status(404).json({ message: 'Locker not found' })
+  }
+
+  // check availability
+  if (locker.availability === true) {
+    logEvents(`Locker with lockerID ${id} is already available`)
+    return res.status(408).json({ message: 'Locker is already available' })
+  }
+
+  // role = admin -> clear vô điều kiện
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1]
+    if (!token) return res.status(401).json({ message: 'Token not found' })
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
+      req.user = decoded.username
+      if (decoded.role === 'admin') {
+        logEvents(`an admin ${decoded.username} has cancel the locker`)
+        logEvents(
+          `Locker with lockerID ${id} cleared by user ${username} using pin`
+        )
+      }
+    })
+  } else {
+    if (!username) {
+      // Check username exists and matches
+      logEvents(`Clear failed: username missing for locker ${id}`)
+      return res.status(400).json({ message: 'Username missing' })
     }
-
-    if (locker.availability === true) {
-      logEvents(`Locker with lockerID ${id} is already available`)
-      return res.status(400).json({ message: 'Locker is already available' })
-    }
-
-    // ✅ Check username
-    if (!username || username !== locker.username) {
+    if (username !== locker.username) {
       logEvents(`Clear failed: username mismatch for locker ${id}`)
-      return res.status(403).json({ message: 'Username mismatch' })
+      return res.status(401).json({ message: 'Username mismatch' })
     }
-
-    // ✅ Check pin
     if (!pin) {
+      // Check pin exists
       logEvents(`Clear failed: no pin provided for locker ${id}`)
-      return res
-        .status(400)
-        .json({ message: 'Pin is required to clear locker' })
+      return res.status(402).json({ message: 'Pin is required' })
     }
-
-    const pinMatch = await bcrypt.compare(pin, locker.hashedPin)
-    if (!pinMatch) {
+    // Compare pin
+    if (!(await bcrypt.compare(pin, locker.hashedPin))) {
       logEvents(`Clear failed: incorrect pin for locker ${id}`)
       return res.status(403).json({ message: 'Incorrect pin' })
     }
-
-    // ✅ Clear locker
-    locker.username = null
-    locker.availability = true
-    locker.hashedPin = null
-    await locker.save()
-
-    logEvents(
-      `Locker with lockerID ${id} cleared by user ${username} using pin`
-    )
-    return res.json({ message: `Locker ${id} cleared successfully` })
-  } catch (error) {
-    logEvents(`Error clearing locker: ${error.message}`)
-    return res
-      .status(500)
-      .json({ message: 'Server error', error: error.message })
   }
+
+  // Clear locker
+  locker.username = null
+  locker.availability = true
+  locker.hashedPin = null
+  await locker.save()
+
+  logEvents(`Locker with lockerID ${id} cleared by user ${username} using pin`)
+  return res.status(200).json({ message: `Locker ${id} cleared successfully` })
 }
 
 // Delete a locker

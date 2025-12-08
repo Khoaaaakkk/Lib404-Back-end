@@ -6,6 +6,7 @@ import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import { ref } from 'process'
+import { ReadPreference } from 'mongodb'
 dotenv.config()
 
 const ACCESS_TOKEN_TTL = '1800s' // 900s for production and 1800s for testing
@@ -51,7 +52,7 @@ export const SignUp = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // store new user
-    const newUser = await User.create({
+    await User.create({
       username: username,
       hashedPassword: hashedPassword,
       email: email
@@ -104,9 +105,10 @@ export const signIn = async (req, res) => {
     // create accessToken with JWTs
     const accessToken = jwt.sign(
       {
+        // payload
         userId: foundUser._id,
         username: foundUser.username,
-        email: foundUser.email
+        role: foundUser.role
       },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: ACCESS_TOKEN_TTL }
