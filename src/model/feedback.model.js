@@ -3,13 +3,11 @@ import mongoose from 'mongoose'
 const FeedbackSchema = mongoose.Schema(
   {
     username: {
-      type: String,
-      ref: 'User'
+      type: String
     },
 
     email: {
-      type: String,
-      ref: 'User'
+      type: String
     },
 
     feedbackType: {
