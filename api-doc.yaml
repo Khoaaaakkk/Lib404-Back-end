@@ -523,7 +523,7 @@ paths:
           description: Internal server error
 
   /lockers/{id}/clear:
-    delete:
+    put:
       tags:
         - Lockers
       summary: Clear locker reservation.
@@ -630,6 +630,109 @@ paths:
         '404':
           description: Feedback with email not found
 
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Returns all users (hashedPassword is excluded by controller).
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: Creates a new user using the request body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Created user (hashedPassword excluded)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    put:
+      tags:
+        - Users
+      summary: Update a user (username provided in body)
+      description: |
+        Updates a user based on `req.body.username`.
+        Controller updates `username` and `password` fields.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    delete:
+      tags:
+        - Users
+      summary: Delete a user (username provided in body)
+      description: Deletes a user using `req.body.username`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: User not found
+
+  /api/users/{username}:
+    get:
+      tags:
+        - Users
+      summary: Get user by username
+      description: Returns a single user by username.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
 components:
   schemas:
     Room:
@@ -719,18 +822,43 @@ components:
         - feedbackType
         - rating
         - message
+
     User:
+      type: object
+      description: User object used for both request and response.
       properties:
+        _id:
+          type: string
+          example: "665f1a0b9c8a1f23d4e5b6c7"
         username:
           type: string
-          example: '23521677'
+          example: "ducnguyen"
+        hashedPassword:
+          type: string
+          example: "$2b$10$abcxyz..."
         email:
           type: string
-          example: '23521677@gm.uit.edu.vn'
-        password:
+          format: email
+          example: "duc@example.com"
+        displayName:
           type: string
-          example: 'securePassword123'
+          example: "Duc Nguyen"
+        avatarUrl:
+          type: string
+          nullable: true
+          example: "https://cdn.example.com/avatar.png"
+        avatarId:
+          type: string
+          nullable: true
+          example: "cloudinary-id"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
       required:
         - username
+        - hashedPassword
         - email
-        - password
+        - displayName
