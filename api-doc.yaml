@@ -265,7 +265,7 @@ paths:
       tags:
         - Tables
       summary: Update table information
-      description: Update table username, pin, availability, and reservedTime
+      description: Update table username, availability, and reservedTime
       operationId: updateTable
       parameters:
         - name: id
@@ -283,9 +283,6 @@ paths:
               properties:
                 username:
                   type: string
-                pin:
-                  type: string
-                  nullable: true
                 reservedTime:
                   type: integer
                   nullable: true
@@ -332,7 +329,7 @@ paths:
     put:
       tags:
         - Tables
-      summary: Clear table reservation (reset username, availability, pin)
+      summary: Clear table reservation (reset username, availability)
       description: Reset table to available state
       operationId: clearTable
       parameters:
@@ -350,9 +347,6 @@ paths:
               type: object
               properties:
                 username:
-                  type: string
-                  nullable: true
-                pin:
                   type: string
                   nullable: true
       responses:
@@ -530,7 +524,7 @@ paths:
 
 
   /lockers/{id}/clear:
-    put:
+    delete:
       tags:
       - Lockers
       summary: Clear locker reservation.
@@ -672,9 +666,6 @@ components:
         availability:
           type: boolean
         username:
-          type: string
-          nullable: true
-        hashedPin:
           type: string
           nullable: true
         expiresAt:
