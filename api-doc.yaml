@@ -1,15 +1,15 @@
 openapi: 3.0.4
 info:
-  title: Library Reservation API
+  title: Lib404 API
   description: |-
-    API for the library reservation website, allowing users to book study desks and lockers. 
+    API for the Lib404 website, allowing users to book study desks and lockers. 
     Endpoints provide functionality to manage reservations, check desk/locker availability, 
     create, cancel, or update reservations. 
     Designed for integration with web to enhance the user experience in the library.
 
     Some useful links:
-    - [The Library Reservation repository]
-    - [The source API definition for the Library Reservation]
+    - [The Lib404 repository]
+    - [The source API definition for the Lib404 project](https://github.com/Khoaaaa/Lib404-Back-end/blob/main/api-doc.yaml)
   termsOfService: http://libraryreservation.com/terms/
   contact:
     email: support@libraryreservation.com
@@ -18,6 +18,8 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.12
 servers:
+  - url: https://libraryreservationapi.onrender.com
+    description: Production server
   - url: http://localhost:8080
     description: Local server
 tags:
@@ -265,7 +267,7 @@ paths:
       tags:
         - Tables
       summary: Update table information
-      description: Update table username, pin, availability, and reservedTime
+      description: Update table username, availability, and reservedTime
       operationId: updateTable
       parameters:
         - name: id
@@ -283,9 +285,6 @@ paths:
               properties:
                 username:
                   type: string
-                pin:
-                  type: string
-                  nullable: true
                 reservedTime:
                   type: integer
                   nullable: true
@@ -322,7 +321,7 @@ paths:
           content:
             application/json:
               example:
-                message: "Table deleted successfully"
+                message: 'Table deleted successfully'
         '404':
           description: Table not found
         '500':
@@ -332,7 +331,7 @@ paths:
     put:
       tags:
         - Tables
-      summary: Clear table reservation (reset username, availability, pin)
+      summary: Clear table reservation (reset username, availability)
       description: Reset table to available state
       operationId: clearTable
       parameters:
@@ -352,9 +351,6 @@ paths:
                 username:
                   type: string
                   nullable: true
-                pin:
-                  type: string
-                  nullable: true
       responses:
         '200':
           description: Table cleared successfully
@@ -370,7 +366,7 @@ paths:
   /lockers:
     post:
       tags:
-      - Lockers
+        - Lockers
       summary: Create a new locker.
       description: Add a new locker to the system.
       operationId: createNewLocker
@@ -393,7 +389,7 @@ paths:
 
     get:
       tags:
-      - Lockers
+        - Lockers
       summary: Get all lockers.
       description: Retrieve a list of all lockers.
       operationId: getAllLockers
@@ -409,11 +405,10 @@ paths:
         '500':
           description: Internal server error
 
-
   /lockers/import:
     get:
       tags:
-      - Lockers
+        - Lockers
       summary: Import locker data.
       description: Import predefined lockers (1–136) into the system.
       operationId: importLockers
@@ -427,25 +422,24 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Lockers imported successfully"
+                    example: 'Lockers imported successfully'
         '500':
           description: Internal server error
-
 
   /lockers/{id}:
     get:
       tags:
-      - Lockers
+        - Lockers
       summary: Get locker by LockerId.
       description: Get locker details by LockerId.
       operationId: getLockerByID
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Locker ID
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: Locker ID
+          schema:
+            type: string
       responses:
         '200':
           description: Locker details retrieved successfully
@@ -460,17 +454,17 @@ paths:
 
     put:
       tags:
-      - Lockers
+        - Lockers
       summary: Assign locker to a user.
       description: Update locker availability and assign username (only if locker is available).
       operationId: updateLocker
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Locker ID
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: Locker ID
+          schema:
+            type: string
       requestBody:
         description: Username to assign.
         required: true
@@ -481,7 +475,7 @@ paths:
               properties:
                 username:
                   type: string
-                  example: "23521677"
+                  example: '23521677'
       responses:
         '200':
           description: Locker updated successfully
@@ -498,17 +492,17 @@ paths:
 
     delete:
       tags:
-      - Lockers
+        - Lockers
       summary: Delete a locker by LockerId.
       description: Remove a locker from the system.
       operationId: deleteLocker
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Locker ID
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: Locker ID
+          schema:
+            type: string
       requestBody:
         description: Locker delete request (not required but kept for consistency)
         required: true
@@ -522,27 +516,26 @@ paths:
           content:
             application/json:
               example:
-                message: "Locker deleted successfully"
+                message: 'Locker deleted successfully'
         '404':
           description: Locker not found
         '500':
           description: Internal server error
 
-
   /lockers/{id}/clear:
-    put:
+    delete:
       tags:
-      - Lockers
+        - Lockers
       summary: Clear locker reservation.
       description: Clear locker (set available = true), remove username, and verify PIN.
       operationId: clearLocker
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Locker ID
-        schema:
-          type: string
+        - name: id
+          in: path
+          required: true
+          description: Locker ID
+          schema:
+            type: string
       requestBody:
         description: Username and PIN required to clear locker.
         required: true
@@ -553,17 +546,17 @@ paths:
               properties:
                 username:
                   type: string
-                  example: "23521677"
+                  example: '23521677'
                 pin:
                   type: string
-                  example: "1234"
+                  example: '1234'
       responses:
         '200':
           description: Locker cleared successfully
           content:
             application/json:
               example:
-                message: "Locker 5 cleared successfully"
+                message: 'Locker 5 cleared successfully'
         '400':
           description: Missing PIN or locker already available
         '403':
@@ -572,7 +565,6 @@ paths:
           description: Locker not found
         '500':
           description: Internal server error
-
 
   /feedback:
     post:
@@ -595,7 +587,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feedback'
-    
+
     get:
       tags:
         - Feedback
@@ -611,8 +603,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feedback'
-    
-  /feedback/{email}: 
+
+  /feedback/{email}:
     get:
       tags:
         - Feedback
@@ -637,8 +629,7 @@ paths:
                   $ref: '#/components/schemas/Feedback'
         '404':
           description: Feedback with email not found
-    
-  
+
 components:
   schemas:
     Room:
@@ -648,15 +639,15 @@ components:
           example: 101
         type:
           type: string
-          example: "Standard"
+          example: 'Standard'
         floorId:
           type: string
-          example: "1"
+          example: '1'
       required:
         - roomId
         - type
         - floorId
-    
+
     Table:
       type: object
       properties:
@@ -674,9 +665,6 @@ components:
         username:
           type: string
           nullable: true
-        hashedPin:
-          type: string
-          nullable: true
         expiresAt:
           type: string
           format: date-time
@@ -690,7 +678,7 @@ components:
         updatedAt:
           type: string
           format: date-time
-    
+
     Locker:
       type: object
       properties:
@@ -703,32 +691,46 @@ components:
         username:
           type: string
           nullable: true
-          example: "23521677"
+          example: '23521677'
       required:
-          - lockerId
-          - availability
-
+        - lockerId
+        - availability
 
     Feedback:
       properties:
         username:
           type: string
-          example: "23521677"
+          example: '23521677'
         email:
           type: string
-          example: "23521677@gm.uit.edu.vn"
+          example: '23521677@gm.uit.edu.vn'
         feedbackType:
           type: string
-          example: "Suggestion"
+          example: 'Suggestion'
         rating:
           type: integer
           example: 5
         message:
           type: string
-          example: "Great service!"
+          example: 'Great service!'
       required:
         - username
         - email
         - feedbackType
         - rating
         - message
+    User:
+      properties:
+        username:
+          type: string
+          example: '23521677'
+        email:
+          type: string
+          example: '23521677@gm.uit.edu.vn'
+        password:
+          type: string
+          example: 'securePassword123'
+      required:
+        - username
+        - email
+        - password

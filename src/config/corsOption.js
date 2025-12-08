@@ -1,6 +1,8 @@
 const whitelist = [
   'http://localhost:3000',
-  'https://lib4-uit-front-end.vercel.app'
+  'https://lib4-uit-front-end.vercel.app',
+  'https://libdot404-git-development-anh-khoas-projects-f612374c.vercel.app/', // development
+  'https://lib404.vercel.app/'
 ]
 const corsOptions = {
   origin: (origin, callback) => {
