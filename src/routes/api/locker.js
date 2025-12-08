@@ -17,6 +17,6 @@ router
   .delete(lockerController.deleteLocker)
   .put(lockerController.updateLocker)
 
-router.route('/:id/clear').get(lockerController.clearLocker) // avai = true, xoa user
+router.route('/:id/clear').delete(lockerController.clearLocker) // avai = true, xoa user
 
 export default router
