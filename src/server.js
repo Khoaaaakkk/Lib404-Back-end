@@ -7,7 +7,7 @@ import errorHandler from './middleware/errorHandler.js'
 import verifyJWT from './middleware/verifyJWT.js'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './libs/db.js'
-import './scheduler.js'
+import './libs/scheduler.js'
 
 dotenv.config()
 
