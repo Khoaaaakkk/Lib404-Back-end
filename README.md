@@ -41,24 +41,27 @@
 3. Create databases: (in the `Lib404-Back-end` folder)
    - Access Mongodb Atlas [Link](https://www.mongodb.com/products/platform/atlas-database) -> create a new database named `Lib404`
    - Run the database creation script as: `node src/import/databas.js`
-4. Open 2 CMD windows in the `website-private` folder:
-   - Window 1: run the command -> `php artisan serve`
-   - Window 2: run the command -> `npm run dev`
-5. Open CMD in the `Lib404-Client` folder and run the following commands:
+
+4. Open CMD in the `Lib404-Client` folder and run the following commands:
    - `cd client`
    - `npm install`
-
+5. Open 2 CMD windows:
 - For Development
-  - `npm run dev`
+   - Window 1, in the `Lib404-Back-end` folder:
+       - Run the command -> `npm run dev`
+   - Window 2, in the `Lib404-Client` folder:
+       - Run the command -> `npm run dev`
 - For Production
-  - `npm run build`
-  - `npm run start`
-
-6. Access the website: `localhost:3000` Port 3000 is set by default
-7. The server api: `localhost:8080` Port 8080 is set by default
+   - Window 1, in the `Lib404-Back-end` folder:
+       - Run the command -> `npm run start`
+   - Window 2, in the `Lib404-Client` folder:
+       - Run the command -> `npm run build`
+       - And the command -> `npm run start`
+6. Access the client website: `localhost:3000` (Port 3000 is set by default)
+7. The server api: `localhost:8080` (Port 8080 is set by default)
 8. Go to the account section -> login as Admin
    - username: `admin`
-   - password: `12345678`
+   - password: `admin1`
 
 ## Project Overview
 
